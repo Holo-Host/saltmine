@@ -57,19 +57,33 @@ async function handleRequest(request) {
 
         // url encode, this isn't strictly necessary
         let enc_email = encodeURIComponent(email);
-        //console.log("url_encoded email: ", enc_email);
+        console.log("url_encoded email: ", enc_email);
 
         // return salt if exists in KV store
         // generate one if it doesn't
         let salt = "";
         // try to get from KV store
         salt = await SALTMINE.get(email)
-        console.log("retrieved salt"); //,salt)
-        if(!salt){
-          // this uses the function above
-          salt = await sha256(enc_email)
-        }
-        responseObj.salt = salt;
+        console.log("retrieved",salt)
+
+        // this uses the function above
+        let hash = await sha256(enc_email)
+
+        // write salt and email into KV
+        // Cloudflare will ignore duplicate keys
+        // we can check for duplicates later
+        //   so we can have nice error message
+        // At present there is no way to verify
+        // the ".put" command succeeds
+        // According to documentation
+        // eventual consistency < 10 seconds globally
+        // Be sure these are strings
+        email = email.toString()
+        hash = hash.toString()
+        console.log("putting", email + " " + hash)
+        SALTMINE.put(email, hash)
+
+    responseObj.salt = hash;
         responseStatus = 200;
       }
     }
