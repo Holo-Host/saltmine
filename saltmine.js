@@ -64,8 +64,8 @@ async function handleRequest(request) {
         let salt = "";
         // try to get from KV store
         salt = await SALTMINE.get(email)
-        console.log("retrieved salt"); //,salt)
         if(!salt){
+          console.log("retrieved salt"); //,salt)
           // this uses the function above
           salt = await sha256(enc_email)
         }
