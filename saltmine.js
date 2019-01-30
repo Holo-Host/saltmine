@@ -70,7 +70,6 @@ async function handleRequest(request) {
       }
     }
     console.log(responseStatus, responseObj);
-    console.log(responseStatus, responseBody);
     return new Response(JSON.stringify(responseObj), responseInit);
 
   } catch (e) {
