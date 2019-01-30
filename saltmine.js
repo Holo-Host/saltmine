@@ -32,7 +32,6 @@ async function handleRequest(request) {
   let responseStatus = 500;
   let responseBody = {};
 
-
   // Wrap code in try/catch block to return error stack in the response body
   try {
     // Check request parameters first
@@ -42,22 +41,24 @@ async function handleRequest(request) {
     } else if (request.headers.get("Content-Type") !== 'application/x-www-form-urlencoded') {
         responseStatus = 415;
     } else {
-      // receive email, send salt
+      // get form data
       const data = await request.formData();
-      //console.log(data)
-      const requestObj = {
-        email: data.get('email')
+      // console.log(data)
+      // require email
+      // else invalid
+      let email = data.get('email')
+      console.log("email", email)
+      if(!email){
+        // invalid
+        console.log("email missing")
+        responseStatus = 400;
+      } else {
+        let enc_email = encodeURIComponent(email);
+        // this uses the function above
+        let hash = await sha256(enc_email)
+        responseObj.salt = hash;
+        responseStatus = 200;
       }
-      console.log(requestObj);
-      let email = encodeURIComponent(requestObj.email);
-
-      // this is a direct hash
-      //const hash1 = await crypto.subtle.digest('SHA-256', email)
-
-      // this uses the function above
-      let hash2 = await sha256(email)
-      responseObj.salt = hash2;
-      responseStatus = 200;
     }
     // return Response
     // default responseStatus is 500, see above
