@@ -30,11 +30,14 @@ async function handleRequest(request) {
   */
   let responseObj = {};
   let responseStatus = 500;
+  let responseBody = {};
+
 
   // Wrap code in try/catch block to return error stack in the response body
   try {
     // Check request parameters first
     if (request.method.toLowerCase() !== 'post') {
+  console.log(request.method);
         responseStatus = 400;
     } else if (request.headers.get("Content-Type") !== 'application/x-www-form-urlencoded') {
         responseStatus = 415;
@@ -56,18 +59,21 @@ async function handleRequest(request) {
       responseObj.salt = hash2;
       responseStatus = 200;
     }
-    const init = {
+    // return Response
+    // default responseStatus is 500, see above
+    responseInit = {
       status: responseStatus,
       headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Content-Type': 'application/json'
+      'Access-Control-Allow-Origin': '*',
+      'Content-Type': 'application/json'
       }
     }
-    console.log(responseObj);
-    return new Response(JSON.stringify(responseObj), init);
+    console.log(responseStatus, responseObj);
+    console.log(responseStatus, responseBody);
+    return new Response(JSON.stringify(responseObj), responseInit);
+
   } catch (e) {
       // Display the error stack.
       return new Response(e.stack || e)
   }
 }
-
