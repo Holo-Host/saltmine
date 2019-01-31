@@ -19,15 +19,6 @@ async function sha256(seed) {
 }
 
 /**
- * Utility function for random
- */
-async function entropy(){
-  var array = new Uint32Array(1);
-  crypto.getRandomValues(array);
-  return array;
-}
-
-/**
  * Receive email, gen salt, store in KV, return salt
  * @param {Request} request
  */
@@ -45,17 +36,8 @@ async function handleRequest(request) {
   try {
     // Check request parameters first
     if (request.method.toLowerCase() !== 'post') {
-      // check to see if method is GET
-      // From documentation
-      // "Any GET request to this service will
-      // return 32 bytes Web Crypto random bytes."
-      if (request.method.toLowerCase() == 'get') {
-        let prng = await entropy();
-        let ent = prng[0];
-        //console.log(ent);
-        responseObj.entropy = ent.toString();
-        responseStatus = 200;
-      }
+  console.log(request.method);
+        responseStatus = 400;
     } else if (request.headers.get("Content-Type") !== 'application/x-www-form-urlencoded') {
         responseStatus = 415;
     } else {
@@ -70,9 +52,6 @@ async function handleRequest(request) {
         console.log("email missing")
         responseStatus = 400;
       } else {
-        // from documentation
-        // if incoming salt, then process it
-
         // we have everything so request is valid
         console.log("all request parameters VALID")
 
