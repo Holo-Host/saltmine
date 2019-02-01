@@ -19,12 +19,22 @@ async function sha256(seed) {
 }
 
 /**
- * Utility function for random
+ * Utility function for entropy
  */
-async function entropy(){
-  var array = new Uint32Array(1);
+async function entropy(length){
+  let array = new Uint8Array(length);
   crypto.getRandomValues(array);
-  return array;
+  let hexArray = toHexString(array);
+  return hexArray;
+}
+
+/**
+ * Utility function for bytes into hex
+ */
+function toHexString(byteArray) {
+  return Array.prototype.map.call(byteArray, function(byte) {
+    return ('0' + (byte & 0xFF).toString(16)).slice(-2);
+  }).join('');
 }
 
 /**
@@ -50,11 +60,14 @@ async function handleRequest(request) {
       // "Any GET request to this service will
       // return 32 bytes Web Crypto random bytes."
       if (request.method.toLowerCase() == 'get') {
-        let prng = await entropy();
-        let ent = prng[0];
-        //console.log(ent);
+        let prng = await entropy(32);
+        //console.log(prng);
+        let ent = prng;
         responseObj.entropy = ent.toString();
         responseStatus = 200;
+        console.log(responseStatus, responseObj.entropy);
+        return new Response(responseObj.entropy);
+
       }
     } else if (request.headers.get("Content-Type") !== 'application/x-www-form-urlencoded') {
         responseStatus = 415;
@@ -70,26 +83,53 @@ async function handleRequest(request) {
         console.log("email missing")
         responseStatus = 400;
       } else {
+        let salt = "";
+
         // from documentation
         // if incoming salt, then process it
+        let sent_salt = data.get('salt')
+        if(sent_salt){
+          console.log("salt sent");
+          // 1. check for existing salt
+          // 2. if none, email token and write data:
+          //   'pending', salt, token
 
-        // we have everything so request is valid
-        console.log("all request parameters VALID")
+          existing_salt = await SALTMINE.get(email);
+          if(!existing_salt){
+            console.log("no salt");
+            // this uses the function above
+            //salt = await sha256(enc_email);
+            // Be sure these are strings
+            ip = ip.toString()
+            dna = dna.toString()
+            console.log("putting", ip + " " + dna)
+            IP_DNA_QUEUE.put(ip, dna)
 
-        // url encode, this isn't strictly necessary
-        let enc_email = encodeURIComponent(email);
-        //console.log("url_encoded email: ", enc_email);
+          }
 
-        // return salt if exists in KV store
-        // generate one if it doesn't
-        let salt = "";
-        // try to get from KV store
-        salt = await SALTMINE.get(email)
-        if(!salt){
-          console.log("retrieved salt"); //,salt)
-          // this uses the function above
-          salt = await sha256(enc_email)
+
+
+
+          salt = sent_salt;
+
+        } else {
+          // url encode, this isn't strictly necessary
+          let enc_email = encodeURIComponent(email);
+          //console.log("url_encoded email: ", enc_email);
+
+          // return salt if exists in KV store
+          // generate one if it doesn't
+          // try to get from KV store
+          salt = await SALTMINE.get(email);
+          if(!salt){
+            console.log("retrieved salt"); //,salt)
+            // this uses the function above
+            salt = await sha256(enc_email);
+          }
         }
+        // we have everything so request is valid
+        // console.log("all request parameters VALID")
+
         responseObj.salt = salt;
         responseStatus = 200;
       }
