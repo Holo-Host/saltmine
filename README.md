@@ -26,8 +26,10 @@ Not all devices can produce cryptographically secure entropy. Any GET request to
   * GET
 * Request Parameters
   * none/ignored
-* Response
+* Responses
   * 32 bytes Web Crypto random bytes
+  * error
+
 
 ## 2 - Register Salt (POST /)
 
@@ -48,9 +50,9 @@ The salt will be echoed to the user in the response.
 * Request Parameters
   * email (required)
   * salt (required)
-* Response
+* Responses
   * salt
-
+  * error
 
 
 ## 3 - Verify Email (POST /)
@@ -65,6 +67,17 @@ If the verification token matches, the “pending” note will be changed to “
 
 The salt will be sent to the user in response.
 
+* Method
+  * POST
+* Request Parameters
+  * email (required)
+  * token (required)
+* Response
+  * salt
+  * 401 Unauthorized
+  * error
+
+
 ## 4 - Bad Email Lookup (POST /)
 
 User inputs post data:
@@ -75,6 +88,15 @@ We don’t find this address in the KV store. If a bad actor is looking up rando
 
 Return the generated 32 bytes.
 
+* Method
+  * POST
+* Request Parameters
+  * email (required)
+* Response
+  * generated salt
+  * error
+
+
 ## 5 - Good Email Lookup (POST /)
 
 User inputs post data:
@@ -82,6 +104,14 @@ User inputs post data:
 email=address%40domain.com
 
 If the email address is found in the KV store, the 32 bytes of salt is returned to the user.
+
+* Method
+  * POST
+* Request Parameters
+  * email (required)
+* Response
+  * salt
+  * error
 
 ## Reference
 
