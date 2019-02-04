@@ -38,39 +38,102 @@ function toHexString(byteArray) {
 }
 
 /**
+ * Utility function responseObj
+ */
+const responseObj = () => ({
+  let responseObj = {};
+  return responseObj;
+});
+
+/**
+ * Utility function responseInit
+ */
+const responseInit = (responseStatus) => ({
+  responseInit = {
+    status: responseStatus,
+    headers: {
+    'Access-Control-Allow-Origin': '*'
+    }
+  };
+  return responseInit;
+});
+
+/**
+ * Utility function response
+ */
+const builtResponse = (responseObj, responseInit) => ({
+  let response = {
+    "responseObj" : responseObj,
+    "responseInit" : responseInit
+  };
+  return response;
+});
+
+/**
+ * Utility function response
+ */
+const response = (response) => ({
+  'no token' : (prng) => {
+    console.log('no token');
+    responseStatus = 200;
+    let responseObj = responseObj();
+    responseObj.prng = prng.toString();
+    responseInit = responseInit(200);
+    return builtResponse(responseObj,responseInit);
+  },
+  'no content-type' : () => {
+    console.log('no content-type');
+    let responseObj = responseObj();
+    responseInit = responseInit(415);
+    return builtResponse(responseObj,responseInit);
+  },
+  'no email' : () => {
+    console.log('no email');
+    let responseObj = responseObj();
+    responseInit = responseInit(400);
+    return builtResponse(responseObj,responseInit);
+  }
+})[response] || ( () => {
+  console.log('default response');
+  let responseObj = responseObj();
+  responseInit = responseInit(500);
+  return builtResponse(responseObj,responseInit);
+} )();
+
+/**
  * Receive email, gen salt, store in KV, return salt
  * @param {Request} request
  */
 async function handleRequest(request) {
-  /*
-  let requestHeaders = JSON.stringify([...request.headers], null, 2)
-  console.log(`Request headers: ${requestHeaders}`)
-  console.log(request);
-  */
-  let responseObj = {};
-  let responseStatus = 500;
-  let responseBody = {};
-
   // Wrap code in try/catch block to return error stack in the response body
   try {
     // Check request parameters first
     if (request.method.toLowerCase() !== 'post') {
       // check to see if method is GET
-      // From documentation
-      // "Any GET request to this service will
-      // return 32 bytes Web Crypto random bytes."
       if (request.method.toLowerCase() == 'get') {
-        let prng = await entropy(32);
-        //console.log(prng);
-        let ent = prng;
-        responseObj.entropy = ent.toString();
-        responseStatus = 200;
-        console.log(responseStatus, responseObj.entropy);
-        return new Response(responseObj.entropy);
-
+        //console.log('is get')
+        // process token or return random
+        const url = new URL(request.url);
+        // token or not?
+        const hasToken = url.searchParams.has("token") === true;
+        if(hasToken){
+          // process token
+          console.log('token', url.searchParams.get("token"));
+          // do more here
+        } else {
+          // console.log('no token');
+          // return random
+          let prng = await entropy(32);
+          //console.log(response('no token')(prng));
+          let r = response('no token')(prng);
+          return new Response(r.responseObj.prng, r.responseInit);
+          // ternary
+          // const isGreaterThan5 = x => x > 5 ? 'Yep' : 'Nope'
+        }
       }
     } else if (request.headers.get("Content-Type") !== 'application/x-www-form-urlencoded') {
-        responseStatus = 415;
+        let r = response('no content-type')();
+        return new Response(r.responseObj, r.responseInit);
     } else {
       // if method and headers are correct
       // get form data
@@ -81,8 +144,9 @@ async function handleRequest(request) {
       let email = data.get('email')
       if(!email){
         // invalid
-        console.log("email missing")
-        responseStatus = 400;
+        //console.log("no email")
+        let r = response('no email')();
+        return new Response(r.responseObj, r.responseInit);
       } else {
         let salt = "";
         // from documentation
@@ -184,16 +248,8 @@ async function handleRequest(request) {
       }
     }
     // return Response
-    // default responseStatus is 500, see above
-    responseInit = {
-      status: responseStatus,
-      headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Content-Type': 'application/json'
-      }
-    }
-    console.log(responseStatus, responseObj);
-    return new Response(JSON.stringify(responseObj), responseInit);
+    console.log('EOL');
+    response();
 
   } catch (e) {
       // Display the error stack.
