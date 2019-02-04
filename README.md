@@ -22,6 +22,13 @@ We can have this service live at https://saltmine.holohost.net
 
 Not all devices can produce cryptographically secure entropy. Any GET request to this service will return 32 bytes Web Crypto random bytes. Clients will locally generate 32 bytes, and XOR them with the bytes from the server to achieve a salt that is a mixture of the entropies.
 
+* Method
+  * GET
+* Request Parameters
+  * none/ignored
+* Response
+  * 32 bytes Web Crypto random bytes
+
 ## 2 - Register Salt (POST /)
 
 A holo user wishes to register 32 bytes of SALT with the salt service. They have already generated this salt with the XOR scheme described in #1  - Entropy. They make a POST request to this service, content-type application/x-www-form-urlencoded:
