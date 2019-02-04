@@ -43,6 +43,16 @@ A value will be stored in the KV associating their email with a “pending” no
 	
 The salt will be echoed to the user in the response.
 
+* Method
+  * POST
+* Request Parameters
+  * email (required)
+  * salt (required)
+* Response
+  * salt
+
+
+
 ## 3 - Verify Email (POST /)
 
 A holo user will receive the email with the random token. They will post again to the salt service:
