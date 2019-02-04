@@ -2,7 +2,7 @@
 
 **This is Pre-Alpha software only for testing purposes.**
 
-This repository is the javascript code for a Cloudflare worker that works in accordance with the following documentation.
+This repository is the javascript code for a Cloudflare worker that works in accordance with the documentation.
 
 # Holo Salt Service
 
