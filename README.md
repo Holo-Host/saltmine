@@ -54,11 +54,13 @@ The salt will be echoed to the user in the response.
   * error
 
 
-## 3 - Verify Email (POST /)
+## 3 - Verify Email (GET /)
+
+**coding in progress**
 
 A holo user will receive the email with the random token. They will post again to the salt service:
 
-```email=address%40domain.com&token=abc123```
+```token=abc123```
 
 If the verification token matches, the “pending” note will be changed to “active”, and the token can be deleted. If not, a 401 unauthorized will be returned.
 
@@ -69,7 +71,6 @@ The salt will be sent to the user in response.
 * Method
   * POST
 * Request Parameters
-  * email (required)
   * token (required)
 * Response
   * salt
