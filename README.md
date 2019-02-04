@@ -34,7 +34,7 @@ Not all devices can produce cryptographically secure entropy. Any GET request to
 
 A holo user wishes to register 32 bytes of SALT with the salt service. They have already generated this salt with the XOR scheme described in #1  - Entropy. They make a POST request to this service, content-type application/x-www-form-urlencoded:
 
-email=address%40domain.com&salt=abc123
+```email=address%40domain.com&salt=abc123```
 
 If this email does not already have salt associated with it, an email will be sent to the user to verify that they have this email address. The email will contain a random token. The random token can be 4 hex encoded random bytes.
 
@@ -58,7 +58,7 @@ The salt will be echoed to the user in the response.
 
 A holo user will receive the email with the random token. They will post again to the salt service:
 
-email=address%40domain.com&token=abc123
+```email=address%40domain.com&token=abc123```
 
 If the verification token matches, the “pending” note will be changed to “active”, and the token can be deleted. If not, a 401 unauthorized will be returned.
 
@@ -81,7 +81,7 @@ The salt will be sent to the user in response.
 
 User inputs post data:
 
-email=bad.address%40domain.com
+```email=bad.address%40domain.com```
 
 We don’t find this address in the KV store. If a bad actor is looking up random emails to see if they have salt, we don’t want to alert them to whether or not that email has a salt associated. We will perform a sha256 hash on the email address concatenated to 32 bytes that we hard-code into the service, to consistently generate 32 bytes to output without having to store anything.
 
@@ -100,7 +100,7 @@ Return the generated 32 bytes.
 
 User inputs post data:
 
-email=address%40domain.com
+```email=address%40domain.com```
 
 If the email address is found in the KV store, the 32 bytes of salt is returned to the user.
 
