@@ -32,6 +32,8 @@ Not all devices can produce cryptographically secure entropy. Any GET request to
 
 ## 2 - Register Salt (POST /)
 
+**coding in progress**
+
 A holo user wishes to register 32 bytes of SALT with the salt service. They have already generated this salt with the XOR scheme described in #1  - Entropy. They make a POST request to this service, content-type application/x-www-form-urlencoded:
 
 ```email=address%40domain.com&salt=abc123```
@@ -40,7 +42,8 @@ If this email does not already have salt associated with it, an email will be se
 
 (EMAIL SENDING IS DEFERRED FOR CLOSED ALPHA)
 
-A value will be stored in the KV associating their email with a “pending” note, the salt, and the verification token.
+* A value will be stored in a KV associating their email with a “pending” note, the salt.
+* A second KV stores email and the verification token and token expiration.
 	
 The salt will be echoed to the user in the response.
 
