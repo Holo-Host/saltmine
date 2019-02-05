@@ -4,7 +4,7 @@ addEventListener('fetch', event => {
 
 /**
  * Utility function for sha256 hashing
- * @param {Sting} seed
+ * @param {String} seed
  */
 async function sha256(seed) {
   // encode as UTF-8
@@ -20,6 +20,7 @@ async function sha256(seed) {
 
 /**
  * Utility function for entropy
+ * @param {int} length
  */
 async function entropy(length){
   let array = new Uint8Array(length);
@@ -30,6 +31,7 @@ async function entropy(length){
 
 /**
  * Utility function for bytes into hex
+ * @param {ArrayBuffer} byteArray
  */
 function toHexString(byteArray) {
   return Array.prototype.map.call(byteArray, function(byte) {
@@ -40,13 +42,11 @@ function toHexString(byteArray) {
 /**
  * Utility function responseObj
  */
-function responseObj(){
-  let rresponseObj = {};
-  return rresponseObj;
-};
+const responseObj = () => ({})();
 
 /**
  * Utility function responseInit
+ * @param {int} responseStatus
  */
 const responseInit = (responseStatus) => {
   let rresponseInit = {
@@ -75,11 +75,9 @@ const builtResponse = (responseObj, responseInit) => {
 const response = (response) => ({
   'no token' : (prng) => {
     console.log('no token');
-    responseStatus = 200;
-    let rresponseObj = responseObj();
-    rresponseObj.prng = prng.toString();
-    rresponseInit = responseInit(200);
-    return builtResponse(rresponseObj,rresponseInit);
+    responseObj.body = prng.toString();
+    return builtResponse(responseObj,responseInit(200));
+
   },
   'no content-type' : () => {
     console.log('no content-type');
@@ -92,6 +90,11 @@ const response = (response) => ({
     let rresponseObj = responseObj();
     rresponseInit = responseInit(400);
     return builtResponse(rresponseObj,rresponseInit);
+  },
+  'token' : () => {
+    console.log('token');
+    responseObj.body = 'thanks';
+    return builtResponse(responseObj,responseInit(200));
   }
 })[response] || ( () => {
   status = 'default response';
@@ -122,13 +125,17 @@ async function handleRequest(request) {
           // process token
           console.log('token', url.searchParams.get("token"));
           // do more here
+
+
+          let r = response('token')();
+          return new Response(r.responseObj.body, r.responseInit);
         } else {
           // console.log('no token');
           // return random
           let prng = await entropy(32);
           //console.log(response('no token')(prng));
           let r = response('no token')(prng);
-          return new Response(r.responseObj.prng, r.responseInit);
+          return new Response(r.responseObj.body, r.responseInit);
           // ternary
           // const isGreaterThan5 = x => x > 5 ? 'Yep' : 'Nope'
         }
