@@ -60,26 +60,48 @@ const responseInit = (responseStatus) => ({
  */
 const response = (response) => ({
   'no token' : (prng) => {
-    console.log('no token');
-    responseObj.body = prng.toString();
+    console.log(response);
     responseInit.status = 200;
+    responseObj.body = prng.toString();
+    console.log({responseObj, responseInit});
+    console.log(responseObj.body);
     return {responseObj, responseInit};
 
   },
+  'token' : () => {
+    console.log(response);
+    responseInit.status = 200;
+    responseObj.body = response;
+    return {responseObj, responseInit};
+  },
   'no content-type' : () => {
-    console.log('no content-type');
+    console.log(response);
     responseInit.status = 415;
+    responseObj.body = response;
     return {responseObj, responseInit};
   },
   'no email' : () => {
-    console.log('no email');
+    console.log(response);
     responseInit.status = 400;
+    responseObj.body = response;
     return {responseObj, responseInit};
   },
-  'token' : () => {
-    console.log('token');
+  'no salt' : () => {
+    console.log(response);
+    responseInit.status = 400;
+    responseObj.body = response;
+    return {responseObj, responseInit};
+  },
+  'sent salt' : (salt) => {
+    console.log(response);
     responseInit.status = 200;
-    responseObj.body = 'thanks';
+    responseObj.body = salt;
+    return {responseObj, responseInit};
+  },
+  'post tmp' : (incoming) => {
+    console.log(response);
+    responseInit.status = 200;
+    responseObj.body = incoming;
     return {responseObj, responseInit};
   }
 })[response] || ( () => {
@@ -90,6 +112,102 @@ const response = (response) => ({
   return {responseObj, responseInit};
 } )();
 
+async function doGET(request){
+  // process token or return random
+  const url = new URL(request.url);
+  // token or not?
+  const hasToken = url.searchParams.has("token") === true;
+  if(hasToken){
+    // process token
+    console.log('token', url.searchParams.get("token"));
+    // do more here
+
+    let r = response('token')();
+    return new Response(r.responseObj.body, r.responseInit);
+  } else {
+    // return random
+    let prng = await entropy(32);
+    let r = response('no token')(prng);
+    return new Response(responseObj.body, responseInit);
+  }
+}
+
+async function doPOST(request){
+  if (request.headers.get("Content-Type") !== 'application/x-www-form-urlencoded') {
+    let r = response('no content-type')();
+    return new Response(responseObj.body, responseInit);
+  } else {
+    // if method and headers are correct
+    // get form data
+    const data = await request.formData();
+    let email = data.get('email');
+    if(!email){
+      let r = response('no email')();
+      return new Response(responseObj.body, responseInit);
+    } else {
+      // 1. check for existing salt
+      // 2. if none, email token and write data:
+      //   'pending', salt, token
+      let sent_salt = data.get('salt');
+      if(sent_salt){
+        let existing_data = await getDataByEmail(email);
+      if(!existing_data){
+          salt = sent_salt;
+          // gen token
+          let prng = await entropy(4);
+          // this is for later
+          //sendTokenEmail(email,token);
+
+          let values = "something goes here";
+          writeData(values);
+
+          let r = response('sent salt')(salt);
+          return new Response(responseObj.body, responseInit);
+        } else {
+          // waiting for clarification here
+          let existing = JSON.parse(existing_data);
+          console.log(existing.salt);
+          console.log('data found',existing.salt);
+          salt = existing.salt;
+
+          let r = response('sent salt')(salt);
+          return new Response(responseObj.body, responseInit);
+        }
+      } else {
+        let r = response('no salt')();
+        return new Response(responseObj.body, responseInit);
+      }
+
+
+
+
+
+    }
+  }
+}
+
+async function getDataByEmail(email){
+  existing_data = await SALTMINE.get(email);
+  return existing_data;
+}
+function sentTokenEmail(email,token){
+  // does nothing for now
+  // possibly return success/fail
+}
+async function writeData(data){
+  // rewrite this according to new docs
+  /*
+  let status = "pending";
+  let token = prng.toString();
+  let data_string = `{"status":"${status}", "token":"${token}", "salt":"${sent_salt}"}`;
+  console.log("putting",data_string);
+  SALTMINE.put(email, data_string);
+  */
+  // possible return something
+  // but there is no way to know if .put worked
+}
+
+
 /**
  * Receive email, gen salt, store in KV, return salt
  * @param {Request} request
@@ -97,82 +215,25 @@ const response = (response) => ({
 async function handleRequest(request) {
   // Wrap code in try/catch block to return error stack in the response body
   try {
-    // Check request parameters first
-    if (request.method.toLowerCase() !== 'post') {
-      // check to see if method is GET
-      if (request.method.toLowerCase() == 'get') {
-        //console.log('is get')
-        // process token or return random
-        const url = new URL(request.url);
-        // token or not?
-        const hasToken = url.searchParams.has("token") === true;
-        if(hasToken){
-          // process token
-          console.log('token', url.searchParams.get("token"));
-          // do more here
+    // starting over
+    if (request.method.toLowerCase() == 'get') {
+      let response = await doGET(request);
+      return response;
+    } else if(request.method.toLowerCase() === 'post') {
+      console.log('post');
+      let response = await doPOST(request);
+      return response;
+    }
 
 
-          let r = response('token')();
-          return new Response(r.responseObj.body, r.responseInit);
-        } else {
-          // console.log('no token');
-          // return random
-          let prng = await entropy(32);
-          //console.log(response('no token')(prng));
-          let r = response('no token')(prng);
-          return new Response(r.responseObj.body, r.responseInit);
-          // ternary
-          // const isGreaterThan5 = x => x > 5 ? 'Yep' : 'Nope'
-        }
-      }
-    } else if (request.headers.get("Content-Type") !== 'application/x-www-form-urlencoded') {
-        let r = response('no content-type')();
-        return new Response(r.responseObj, r.responseInit);
-    } else {
-      // if method and headers are correct
-      // get form data
-      const data = await request.formData();
-      // console.log(data)
-      // require email
-      // else invalid
-      let email = data.get('email')
-      if(!email){
-        // invalid
-        //console.log("no email")
-        let r = response('no email')();
-        return new Response(r.responseObj, r.responseInit);
-      } else {
-        let salt = "";
-        // from documentation
-        // if incoming salt, then process it
-        let sent_salt = data.get('salt')
+
+
+
+/*
+
         if(sent_salt){
-          console.log("salt sent");
-          // 1. check for existing salt
-          // 2. if none, email token and write data:
-          //   'pending', salt, token
-
-          existing_salt = await SALTMINE.get(email);
           if(!existing_salt){
-            console.log("no existing salt");
-            // gen token
-            let prng = await entropy(4);
-            console.log(prng);
-            // send email (later)
-            //
-            // put key,value into store
-            // Cloudflare will ignore duplicate keys
-            // we can check for duplicates later
-            //   so we can have nice error message
-            // At present there is no way to verify
-            // the ".put" command succeeds
-            // According to documentation
-            // eventual consistency < 10 seconds globally
-            let status = "pending";
-            let token = prng.toString();
-            let data_string = `{"status":"${status}", "token":"${token}", "salt":"${sent_salt}"}`;
-            console.log("putting",data_string);
-            SALTMINE.put(email, data_string);
+
           } else {
             // waitin for clarification here
             console.log('data found',existing_salt);
@@ -241,6 +302,7 @@ async function handleRequest(request) {
         responseStatus = 200;
       }
     }
+*/
     // return Response
     console.log('invoking final default response');
     // default response is NOT a function
