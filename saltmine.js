@@ -42,6 +42,55 @@ function toHexString(byteArray) {
 /**
  * Utility function responseObj
  */
+  // all the types of requests we respond to
+  // and the responses
+  /*
+  DEFAULT response is 500
+  GET
+    return crypto string, 200
+  GET with token
+    token valid, do stuff, return salt, 200
+    token invalid, return 401
+  POST with no content-type header
+    return error, 415
+  POST email but no salt
+    ?
+  POST email and salt
+    salt valid, do stuff, return salt, 200
+    salt invalid, do stuff, email token, return salt, 200
+  POST invalid email not found in KV store
+    return crypto string, same as GET, 200
+  POST email with valid salt
+    return retrieved salt, 200
+  */
+async function parseRequest(request){
+  let requestObj = {};
+  requestObj.method = request.method.toLowerCase();
+  const url = new URL(request.url);
+  requestObj.token = url.searchParams.get("token");
+  if ((request.method.toLowerCase()==='post') && (request.headers.get("Content-Type") === 'application/x-www-form-urlencoded')) {
+    requestObj.hasForm = true;
+    const data = await request.formData();
+    requestObj.email = data.get('email');
+    requestObj.sent_salt = data.get('salt');
+    if(requestObj.email){
+      let existing_data = JSON.parse(await getDataByEmail(requestObj.email));
+      if(existing_data){
+        console.log('data found',existing_data);
+        requestObj.status = existing_data.status;
+        requestObj.token = existing_data.token;
+        requestObj.salt = existing_data.salt;
+      } else {
+        // something ?
+      }
+    }
+  }
+  return requestObj;
+};
+
+/**
+ * Utility function responseObj
+ */
 const responseObj = () => ({})();
 
 /**
@@ -68,10 +117,10 @@ const response = (response) => ({
     return {responseObj, responseInit};
 
   },
-  'token' : () => {
+  'token' : (token) => {
     console.log(response);
     responseInit.status = 200;
-    responseObj.body = response;
+    responseObj.body = token;
     return {responseObj, responseInit};
   },
   'no content-type' : () => {
@@ -86,7 +135,7 @@ const response = (response) => ({
     responseObj.body = response;
     return {responseObj, responseInit};
   },
-  'no salt' : () => {
+  'no sent salt' : () => {
     console.log(response);
     responseInit.status = 400;
     responseObj.body = response;
@@ -98,10 +147,10 @@ const response = (response) => ({
     responseObj.body = salt;
     return {responseObj, responseInit};
   },
-  'post tmp' : (incoming) => {
+  'existing salt' : (salt) => {
     console.log(response);
     responseInit.status = 200;
-    responseObj.body = incoming;
+    responseObj.body = salt;
     return {responseObj, responseInit};
   }
 })[response] || ( () => {
@@ -112,85 +161,11 @@ const response = (response) => ({
   return {responseObj, responseInit};
 } )();
 
-async function doGET(request){
-  // process token or return random
-  const url = new URL(request.url);
-  // token or not?
-  const hasToken = url.searchParams.has("token") === true;
-  if(hasToken){
-    // process token
-    console.log('token', url.searchParams.get("token"));
-    // do more here
-
-    let r = response('token')();
-    return new Response(r.responseObj.body, r.responseInit);
-  } else {
-    // return random
-    let prng = await entropy(32);
-    let r = response('no token')(prng);
-    return new Response(responseObj.body, responseInit);
-  }
-}
-
-async function doPOST(request){
-  if (request.headers.get("Content-Type") !== 'application/x-www-form-urlencoded') {
-    let r = response('no content-type')();
-    return new Response(responseObj.body, responseInit);
-  } else {
-    // if method and headers are correct
-    // get form data
-    const data = await request.formData();
-    let email = data.get('email');
-    if(!email){
-      let r = response('no email')();
-      return new Response(responseObj.body, responseInit);
-    } else {
-      // 1. check for existing salt
-      // 2. if none, email token and write data:
-      //   'pending', salt, token
-      let sent_salt = data.get('salt');
-      if(sent_salt){
-        let existing_data = await getDataByEmail(email);
-      if(!existing_data){
-          salt = sent_salt;
-          // gen token
-          let prng = await entropy(4);
-          // this is for later
-          //sendTokenEmail(email,token);
-
-          let values = "something goes here";
-          writeData(values);
-
-          let r = response('sent salt')(salt);
-          return new Response(responseObj.body, responseInit);
-        } else {
-          // waiting for clarification here
-          let existing = JSON.parse(existing_data);
-          console.log(existing.salt);
-          console.log('data found',existing.salt);
-          salt = existing.salt;
-
-          let r = response('sent salt')(salt);
-          return new Response(responseObj.body, responseInit);
-        }
-      } else {
-        let r = response('no salt')();
-        return new Response(responseObj.body, responseInit);
-      }
-
-
-
-
-
-    }
-  }
-}
-
 async function getDataByEmail(email){
   existing_data = await SALTMINE.get(email);
   return existing_data;
 }
-function sentTokenEmail(email,token){
+function sendTokenEmail(email,token){
   // does nothing for now
   // possibly return success/fail
 }
@@ -207,7 +182,6 @@ async function writeData(data){
   // but there is no way to know if .put worked
 }
 
-
 /**
  * Receive email, gen salt, store in KV, return salt
  * @param {Request} request
@@ -215,29 +189,55 @@ async function writeData(data){
 async function handleRequest(request) {
   // Wrap code in try/catch block to return error stack in the response body
   try {
-    // starting over
-    if (request.method.toLowerCase() == 'get') {
-      let response = await doGET(request);
-      return response;
-    } else if(request.method.toLowerCase() === 'post') {
-      console.log('post');
-      let response = await doPOST(request);
-      return response;
+    let requestObj = await parseRequest(request);
+    console.log(requestObj);
+
+    // ALL RESPONSES ARE HERE
+    if (requestObj.method === 'get' && !requestObj.token) {
+      // return random
+      let prng = await entropy(32);
+      let r = response('no token')(prng);
+      return new Response(responseObj.body, responseInit);
+    } else if (requestObj.method === 'get' && requestObj.token) {
+      // with token
+      console.log('token', requestObj.token);
+      // do more here
+
+
+      let r = response('token')(requestObj.token);
+      return new Response(responseObj.body, responseInit);
+    } else if (requestObj.method === 'post' && !requestObj.hasForm) {
+      // no content-type
+      let r = response('no content-type')();
+      return new Response(responseObj.body, responseInit);
+      //return response;
+    } else if (requestObj.method === 'post' && requestObj.hasForm && !requestObj.email) {
+      // no email
+      let r = response('no email')();
+      return new Response(responseObj.body, responseInit);
+    } else if (requestObj.method === 'post' && requestObj.hasForm && requestObj.email && !requestObj.sent_salt) {
+      // no sent salt
+      let r = response('no sent salt')();
+      return new Response(responseObj.body, responseInit);
+    } else if (requestObj.method === 'post' && requestObj.hasForm && requestObj.email && requestObj.sent_salt && !requestObj.salt) {
+      // no existing salt
+      // 2. email token, write data:
+      // this is for later
+      let prng = await entropy(4);
+      // sendTokenEmail(email,prng);
+      // let values = "something goes here";
+      //writeData(values);
+      let r = response('sent salt')(requestObj.sent_salt);
+      return new Response(responseObj.body, responseInit);
+    } else if (requestObj.method === 'post' && requestObj.hasForm && requestObj.email && requestObj.sent_salt && requestObj.salt) {
+      // 3. if existing, then what?
+      // waiting for clarification here
+      console.log('data found',requestObj.salt);
+      let r = response('existing salt')(requestObj.salt);
+      return new Response(responseObj.body, responseInit);
     }
-
-
-
-
-
 /*
-
         if(sent_salt){
-          if(!existing_salt){
-
-          } else {
-            // waitin for clarification here
-            console.log('data found',existing_salt);
-          }
           salt = sent_salt;
         } else {
           // if no salt sent in
@@ -270,7 +270,7 @@ async function handleRequest(request) {
                 return new Response('Invalid token', responseInit);
               }
             } else {
-              // error out
+              // no json retrieved from kv
               responseStatus = 404;
               responseInit = {
                 status: responseStatus,
