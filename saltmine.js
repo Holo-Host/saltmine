@@ -40,34 +40,34 @@ function toHexString(byteArray) {
 /**
  * Utility function responseObj
  */
-const responseObj = () => ({
-  let responseObj = {};
-  return responseObj;
-});
+function responseObj(){
+  let rresponseObj = {};
+  return rresponseObj;
+};
 
 /**
  * Utility function responseInit
  */
-const responseInit = (responseStatus) => ({
-  responseInit = {
+const responseInit = (responseStatus) => {
+  let rresponseInit = {
     status: responseStatus,
     headers: {
     'Access-Control-Allow-Origin': '*'
     }
   };
-  return responseInit;
-});
+  return rresponseInit;
+};
 
 /**
  * Utility function response
  */
-const builtResponse = (responseObj, responseInit) => ({
-  let response = {
+const builtResponse = (responseObj, responseInit) => {
+  let rresponse = {
     "responseObj" : responseObj,
     "responseInit" : responseInit
   };
-  return response;
-});
+  return rresponse;
+};
 
 /**
  * Utility function response
@@ -76,28 +76,30 @@ const response = (response) => ({
   'no token' : (prng) => {
     console.log('no token');
     responseStatus = 200;
-    let responseObj = responseObj();
-    responseObj.prng = prng.toString();
-    responseInit = responseInit(200);
-    return builtResponse(responseObj,responseInit);
+    let rresponseObj = responseObj();
+    rresponseObj.prng = prng.toString();
+    rresponseInit = responseInit(200);
+    return builtResponse(rresponseObj,rresponseInit);
   },
   'no content-type' : () => {
     console.log('no content-type');
-    let responseObj = responseObj();
-    responseInit = responseInit(415);
-    return builtResponse(responseObj,responseInit);
+    let rresponseObj = responseObj();
+    rresponseInit = responseInit(415);
+    return builtResponse(rresponseObj,rresponseInit);
   },
   'no email' : () => {
     console.log('no email');
-    let responseObj = responseObj();
-    responseInit = responseInit(400);
-    return builtResponse(responseObj,responseInit);
+    let rresponseObj = responseObj();
+    rresponseInit = responseInit(400);
+    return builtResponse(rresponseObj,rresponseInit);
   }
 })[response] || ( () => {
-  console.log('default response');
-  let responseObj = responseObj();
-  responseInit = responseInit(500);
-  return builtResponse(responseObj,responseInit);
+  status = 'default response';
+  console.log(status);
+  let rresponseObj = responseObj();
+  rresponseObj.body = status;
+  rresponseInit = responseInit(500);
+  return builtResponse(rresponseObj,rresponseInit);
 } )();
 
 /**
@@ -248,8 +250,12 @@ async function handleRequest(request) {
       }
     }
     // return Response
-    console.log('EOL');
-    response();
+    console.log('invoking final default response');
+    // default response is NOT a function
+    // so don't put extra parens on this
+    let r = response();
+    //console.log(r);
+    return new Response(r.responseObj.body, r.responseInit);
 
   } catch (e) {
       // Display the error stack.
