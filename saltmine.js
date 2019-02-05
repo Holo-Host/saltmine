@@ -48,15 +48,12 @@ const responseObj = () => ({})();
  * Utility function responseInit
  * @param {int} responseStatus
  */
-const responseInit = (responseStatus) => {
-  let rresponseInit = {
-    status: responseStatus,
-    headers: {
-    'Access-Control-Allow-Origin': '*'
-    }
-  };
-  return rresponseInit;
-};
+const responseInit = (responseStatus) => ({
+  status: responseStatus,
+  headers: {
+  'Access-Control-Allow-Origin': '*'
+  }
+})();
 
 /**
  * Utility function response
@@ -76,33 +73,32 @@ const response = (response) => ({
   'no token' : (prng) => {
     console.log('no token');
     responseObj.body = prng.toString();
-    return builtResponse(responseObj,responseInit(200));
+    responseInit.status = 200;
+    return builtResponse(responseObj,responseInit);
 
   },
   'no content-type' : () => {
     console.log('no content-type');
-    let rresponseObj = responseObj();
-    rresponseInit = responseInit(415);
-    return builtResponse(rresponseObj,rresponseInit);
+    responseInit.status = 415;
+    return builtResponse(responseObj,responseInit);
   },
   'no email' : () => {
     console.log('no email');
-    let rresponseObj = responseObj();
-    rresponseInit = responseInit(400);
-    return builtResponse(rresponseObj,rresponseInit);
+    responseInit.status = 400;
+    return builtResponse(responseObj,responseInit);
   },
   'token' : () => {
     console.log('token');
+    responseInit.status = 200;
     responseObj.body = 'thanks';
-    return builtResponse(responseObj,responseInit(200));
+    return builtResponse(responseObj,responseInit);
   }
 })[response] || ( () => {
-  status = 'default response';
-  console.log(status);
-  let rresponseObj = responseObj();
-  rresponseObj.body = status;
-  rresponseInit = responseInit(500);
-  return builtResponse(rresponseObj,rresponseInit);
+  note = 'default response';
+  console.log(note);
+  responseInit.status = 500;
+  responseObj.body = note;
+  return builtResponse(responseObj,responseInit);
 } )();
 
 /**
