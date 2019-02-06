@@ -1,0 +1,5 @@
+# mac files
+.DS_Store
+
+# private scripts etc.
+private/
