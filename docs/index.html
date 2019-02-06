@@ -267,7 +267,7 @@
 <p>Welcome to the Holo Saltmine API! You can use our API to access Holo Saltmine API endpoints.</p>
 
 <ul>
-<li>Every API in this service will always return 32 hex encoded bytes with mime type text/plain.</li>
+<li>Every API in this service will always return 32 hex encoded bytes with mime-type text/plain.</li>
 <li>POST requests will require a &quot;Content-Type&quot; header of &quot;application/x-www-form-urlencoded&quot;.</li>
 <li>Response headers will include an &quot;Access-Control-Allow-Origin&quot; header of &quot;&#42;&quot; for Cross-Origin Resource Sharing (CORS).</li>
 </ul>
@@ -305,13 +305,48 @@ At present, we have language bindings for command line / shell scripts!
 <p>URL parameters are ignored for this request.</p>
 <h3 id='query-parameters'>Query Parameters</h3>
 <p>Query parameters are ignored for this request.</p>
-<pre class="highlight shell tab-shell"><code>curl  -X GET <span class="s2">"https://saltmine.holohost.net"</span>
+<pre class="highlight shell tab-shell"><code>curl -X GET <span class="s2">"https://saltmine.holohost.net"</span>
 </code></pre>
 <blockquote>
-<p>The above command returns 32 hex encoded bytes with mime type text/plain</p>
+<p>The above command returns 32 hex encoded bytes with mime-type text/plain</p>
 </blockquote>
 <h1 id='register-salt'>Register Salt</h1>
 <p>POST email and salt</p>
+
+<p>This request is used to register 32 bytes of SALT with the salt service.</p>
+
+<p>It is a POST request with a &quot;Content-type&quot; header of &quot;application/x-www-form-urlencoded&quot;.</p>
+
+<p>If the POSTed email does not already have salt associated with it, an email will
+ be sent to the user to verify that they have this email address.
+ The email will contain a token that the user can use to verify their email address.</p>
+
+<p>The salt will be returned to the user in the response.</p>
+
+<ul>
+<li>Method
+
+<ul>
+<li>POST</li>
+</ul></li>
+<li>Request Parameters
+
+<ul>
+<li>email (required)</li>
+<li>salt (required)</li>
+</ul></li>
+<li>Responses
+
+<ul>
+<li>salt</li>
+<li>error</li>
+</ul></li>
+</ul>
+<pre class="highlight shell tab-shell"><code>  curl -X POST <span class="s2">"https://saltmine.holohost.net"</span> -H <span class="s2">"Content-Type: application/x-www-form-urlencoded"</span> --data <span class="s2">"email=address%40domain.com&amp;salt=abc123"</span>
+</code></pre>
+<blockquote>
+<p>The above command returns the salt with mime-type text/plain</p>
+</blockquote>
 <h1 id='verify-email'>Verify Email</h1>
 <p>GET url with token querystring</p>
 <h3 id='url-parameters-2'>URL Parameters</h3>
@@ -323,7 +358,7 @@ At present, we have language bindings for command line / shell scripts!
 </thead><tbody>
 <tr>
 <td>Token</td>
-<td>[token]</td>
+<td>The token used to verify the email</td>
 </tr>
 </tbody></table>
 <h3 id='query-parameters-2'>Query Parameters</h3>
