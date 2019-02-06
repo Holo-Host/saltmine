@@ -219,15 +219,38 @@
         <ul class="search-results"></ul>
       <ul id="toc" class="toc-list-h1">
           <li>
-            <a href="#holo-saltmine" class="toc-h1 toc-link" data-title="Holo Saltmine">Holo Saltmine</a>
+            <a href="#holo-saltmine-api-documentation" class="toc-h1 toc-link" data-title="Holo Saltmine API Documentation">Holo Saltmine API Documentation</a>
           </li>
           <li>
-            <a href="#header" class="toc-h1 toc-link" data-title="Header">Header</a>
+            <a href="#entropy" class="toc-h1 toc-link" data-title="Entropy">Entropy</a>
               <ul class="toc-list-h2">
                   <li>
-                    <a href="#subheader" class="toc-h2 toc-link" data-title="Subheader">Subheader</a>
+                    <a href="#http-request" class="toc-h2 toc-link" data-title="HTTP Request">HTTP Request</a>
+                  </li>
+                  <li>
+                    <a href="#url-parameters" class="toc-h2 toc-link" data-title="URL Parameters">URL Parameters</a>
+                  </li>
+                  <li>
+                    <a href="#query-parameters" class="toc-h2 toc-link" data-title="Query Parameters">Query Parameters</a>
                   </li>
               </ul>
+          </li>
+          <li>
+            <a href="#register-salt" class="toc-h1 toc-link" data-title="Register Salt">Register Salt</a>
+          </li>
+          <li>
+            <a href="#verify-email" class="toc-h1 toc-link" data-title="Verify Email">Verify Email</a>
+              <ul class="toc-list-h2">
+                  <li>
+                    <a href="#url-parameters-2" class="toc-h2 toc-link" data-title="URL Parameters">URL Parameters</a>
+                  </li>
+                  <li>
+                    <a href="#query-parameters-2" class="toc-h2 toc-link" data-title="Query Parameters">Query Parameters</a>
+                  </li>
+              </ul>
+          </li>
+          <li>
+            <a href="#retrieve-salt" class="toc-h1 toc-link" data-title="Retrieve Salt">Retrieve Salt</a>
           </li>
           <li>
             <a href="#errors" class="toc-h1 toc-link" data-title="Errors">Errors</a>
@@ -240,52 +263,58 @@
     <div class="page-wrapper">
       <div class="dark-box"></div>
       <div class="content">
-        <h1 id='holo-saltmine'>Holo Saltmine</h1>
+        <h1 id='holo-saltmine-api-documentation'>Holo Saltmine API Documentation</h1>
 <p>Welcome to the Holo Saltmine API! You can use our API to access Holo Saltmine API endpoints.</p>
 
-<p>At present, we have language bindings for command line / shell scripts!
-(You can view code examples in the dark area to the right, and you can switch the programming language of the examples with the tabs in the top right.)</p>
-<h1 id='header'>Header</h1><h2 id='subheader'>Subheader</h2><pre class="highlight shell tab-shell"><code>curl <span class="s2">"https://saltmine.holohost.net"</span>
-</code></pre>
-<blockquote>
-<p>The above command returns JSON structured like this:</p>
-</blockquote>
-<pre class="highlight json tab-json"><code><span class="p">[</span><span class="w">
-  </span><span class="p">{</span><span class="w">
-    </span><span class="s2">"id"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
-    </span><span class="s2">"some"</span><span class="p">:</span><span class="w"> </span><span class="s2">"json"</span><span class="w">
-  </span><span class="p">},</span><span class="w">
-  </span><span class="p">{</span><span class="w">
-    </span><span class="s2">"id"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w">
-    </span><span class="s2">"some"</span><span class="p">:</span><span class="w"> </span><span class="s2">"json"</span><span class="w">
-  </span><span class="p">}</span><span class="w">
-</span><span class="p">]</span><span class="w">
-</span></code></pre>
-<p>This endpoint does a thing.</p>
+<ul>
+<li>Every API in this service will always return 32 hex encoded bytes with mime type text/plain.</li>
+<li>POST requests will require a &quot;Content-Type&quot; header of &quot;application/x-www-form-urlencoded&quot;.</li>
+<li>Response headers will include an &quot;Access-Control-Allow-Origin&quot; header of &quot;&#42;&quot; for Cross-Origin Resource Sharing (CORS).</li>
+</ul>
+
+<aside class="notice">
+At present, we have language bindings for command line / shell scripts!
+(You can view code examples in the dark area to the right.)
+</aside>
+<h1 id='entropy'>Entropy</h1>
+<p>Any GET request to this service will return 32 bytes Web Crypto random bytes.</p>
+
+<p>(We provide this service because not all devices can produce cryptographically secure entropy).</p>
+
+<ul>
+<li>Method
+
+<ul>
+<li>GET</li>
+</ul></li>
+<li>Request Parameters
+
+<ul>
+<li>none/ignored</li>
+</ul></li>
+<li>Responses
+
+<ul>
+<li>32 bytes Web Crypto random bytes</li>
+<li>error</li>
+</ul></li>
+</ul>
 <h3 id='http-request'>HTTP Request</h3>
 <p><code>GET https://saltmine.holohost.net</code></p>
-<h3 id='query-parameters'>Query Parameters</h3>
-<table><thead>
-<tr>
-<th>Parameter</th>
-<th>Default</th>
-<th>Description</th>
-</tr>
-</thead><tbody>
-<tr>
-<td>include_cats</td>
-<td>false</td>
-<td>If set to true, the result will also include cats.</td>
-</tr>
-<tr>
-<td>available</td>
-<td>true</td>
-<td>If set to false, the result will include kittens that have already been adopted.</td>
-</tr>
-</tbody></table>
-
-<aside class="warning">Inside HTML code blocks like this one, you can't use Markdown, so use <code>&lt;code&gt;</code> blocks to denote code.</aside>
 <h3 id='url-parameters'>URL Parameters</h3>
+<p>URL parameters are ignored for this request.</p>
+<h3 id='query-parameters'>Query Parameters</h3>
+<p>Query parameters are ignored for this request.</p>
+<pre class="highlight shell tab-shell"><code>curl  -X GET <span class="s2">"https://saltmine.holohost.net"</span>
+</code></pre>
+<blockquote>
+<p>The above command returns 32 hex encoded bytes with mime type text/plain</p>
+</blockquote>
+<h1 id='register-salt'>Register Salt</h1>
+<p>POST email and salt</p>
+<h1 id='verify-email'>Verify Email</h1>
+<p>GET url with token querystring</p>
+<h3 id='url-parameters-2'>URL Parameters</h3>
 <table><thead>
 <tr>
 <th>Parameter</th>
@@ -293,16 +322,30 @@
 </tr>
 </thead><tbody>
 <tr>
-<td>ID</td>
-<td>The ID of the kitten to retrieve</td>
+<td>Token</td>
+<td>[token]</td>
 </tr>
 </tbody></table>
+<h3 id='query-parameters-2'>Query Parameters</h3>
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>Email</td>
+<td>The email to be verified against the token.</td>
+</tr>
+</tbody></table>
+<h1 id='retrieve-salt'>Retrieve Salt</h1>
+<p>POST email</p>
 <h1 id='errors'>Errors</h1>
-<aside class="notice">
-This error section is stored in a separate file in <code>includes/_errors.md</code>. Slate allows you to optionally separate out your docs into many files...just save them to the <code>includes</code> folder and add them to the top of your <code>index.md</code>'s frontmatter. Files are included in the order listed.
+<aside class="warning">
+Errors are returned when there is a problem with the request received.
 </aside>
 
-<p>The Kittn API uses the following error codes:</p>
+<p>The Holo Saltmine API uses the following error codes:</p>
 
 <table><thead>
 <tr>
@@ -328,7 +371,7 @@ This error section is stored in a separate file in <code>includes/_errors.md</co
 </tr>
 <tr>
 <td>415</td>
-<td>Unsupported Media Type -- Triggered when Content-Type header is missing or incorrect.</td>
+<td>Unsupported Media Type -- Returned when Content-Type header is missing or incorrect.</td>
 </tr>
 <tr>
 <td>418</td>
