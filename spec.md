@@ -166,7 +166,7 @@ Query parameters are ignored for this request.
 Code | Response
 ---------- | -------
 200 | The salt as mime-type text/plain.
-401 | Unauthorized: if the email address is valid but the token is invalid or expired
+401 | Unauthorized: if the token is invalid or expired
 500 | Server Error
 
 
