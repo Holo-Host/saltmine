@@ -23,39 +23,13 @@ This repository is the javascript code for a Cloudflare worker that works in acc
 >
 > We can have this service live at https://saltmine.holohost.net
 
-
-
-## 3 - Verify Email (GET /)
-
-**coding in progress**
-
-A holo user will receive the email with the random token. They will go again to the salt service via a URL with the following `querystring`:
-
-```?token=abc123```
-
-If the verification token matches, the “pending” note will be changed to “active”, and the token can be deleted. If not, a 401 unauthorized will be returned.
-
-(FOR CLOSED ALPHA, THIS CAN SKIP THE TOKEN VERIFICATION)
-
-The salt will be sent to the user in response.
-
-
-
-
-## Reference
-
-[Holo Internal Google Doc discussion/spec](https://docs.google.com/document/d/1VIbQDdSnnd4BNgjtupjVeH9PPNe8kgqETpPhIIWyGBU)
-
-
-
-
 In the descriptions below:
 
 * **URL Parameters** refers to parameters being passed into the API via the URL "querystring".
 * **Query Parameters** referst to parameters being passed into the API via POSTed data.
 
 
-# Retrieve Entropy
+## Retrieve Entropy
 
 > **INTERNAL NOTES**
 > 
@@ -88,7 +62,7 @@ curl -X GET "https://saltmine.holohost.net"
 > The above command returns 32 hex encoded bytes with mime-type text/plain
 
 
-# Register Salt or Retrieve Salt
+## Register Salt or Retrieve Salt
 
 > **INTERNAL NOTES**
 > 
@@ -151,7 +125,7 @@ Code | Response
   > The above commands return a salt with mime-type text/plain
 
 
-# Verify Email Address
+## Verify Email Address
 
 > **INTERNAL NOTES**
 > 
@@ -194,3 +168,10 @@ Code | Response
 200 | The salt as mime-type text/plain.
 401 | Unauthorized: if the email address is valid but the token is invalid or expired
 500 | Server Error
+
+
+## Reference
+
+[Holo Internal Google Doc discussion/spec](https://docs.google.com/document/d/1VIbQDdSnnd4BNgjtupjVeH9PPNe8kgqETpPhIIWyGBU)
+
+
