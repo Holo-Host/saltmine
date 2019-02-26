@@ -222,7 +222,7 @@
             <a href="#holo-saltmine-api-documentation" class="toc-h1 toc-link" data-title="Holo Saltmine API Documentation">Holo Saltmine API Documentation</a>
           </li>
           <li>
-            <a href="#entropy" class="toc-h1 toc-link" data-title="Entropy">Entropy</a>
+            <a href="#retrieve-entropy" class="toc-h1 toc-link" data-title="Retrieve Entropy">Retrieve Entropy</a>
               <ul class="toc-list-h2">
                   <li>
                     <a href="#http-request" class="toc-h2 toc-link" data-title="HTTP Request">HTTP Request</a>
@@ -239,7 +239,7 @@
               </ul>
           </li>
           <li>
-            <a href="#register-or-retrieve-salt" class="toc-h1 toc-link" data-title="Register or Retrieve Salt">Register or Retrieve Salt</a>
+            <a href="#register-salt-or-retrieve-salt" class="toc-h1 toc-link" data-title="Register Salt or Retrieve Salt">Register Salt or Retrieve Salt</a>
               <ul class="toc-list-h2">
                   <li>
                     <a href="#http-request-2" class="toc-h2 toc-link" data-title="HTTP Request">HTTP Request</a>
@@ -256,7 +256,7 @@
               </ul>
           </li>
           <li>
-            <a href="#verify-email" class="toc-h1 toc-link" data-title="Verify Email">Verify Email</a>
+            <a href="#verify-email-address" class="toc-h1 toc-link" data-title="Verify Email Address">Verify Email Address</a>
               <ul class="toc-list-h2">
                   <li>
                     <a href="#http-request-3" class="toc-h2 toc-link" data-title="HTTP Request">HTTP Request</a>
@@ -303,7 +303,7 @@ At present, we have language bindings for command line / shell scripts!
 <li><strong>URL Parameters</strong> refers to parameters being passed into the API via the URL &quot;querystring&quot;.</li>
 <li><strong>Query Parameters</strong> referst to parameters being passed into the API via POSTed data.</li>
 </ul>
-<h1 id='entropy'>Entropy</h1>
+<h1 id='retrieve-entropy'>Retrieve Entropy</h1>
 <p>Any GET request to this service will return 32 bytes Web Crypto random bytes.</p>
 
 <p>(We provide this service because not all devices can produce cryptographically secure entropy).</p>
@@ -334,7 +334,7 @@ At present, we have language bindings for command line / shell scripts!
 <blockquote>
 <p>The above command returns 32 hex encoded bytes with mime-type text/plain</p>
 </blockquote>
-<h1 id='register-or-retrieve-salt'>Register or Retrieve Salt</h1>
+<h1 id='register-salt-or-retrieve-salt'>Register Salt or Retrieve Salt</h1>
 <p>This request is used to register 32 bytes of SALT with the salt service.</p>
 
 <p>It is a POST request with a &quot;Content-type&quot; header of &quot;application/x-www-form-urlencoded&quot;.</p>
@@ -401,19 +401,18 @@ At present, we have language bindings for command line / shell scripts!
 <blockquote>
 <p>The above commands return a salt with mime-type text/plain</p>
 </blockquote>
-<h1 id='verify-email'>Verify Email</h1>
+<h1 id='verify-email-address'>Verify Email Address</h1>
 <p>This request is used to verify an email against a token.
 GET url with token querystring.  The token is sent on the URL querystring as:</p>
 
-<p><code>?token=abc123</code></p>
+<p><code>?token=sometoken</code></p>
 
-<p>If the email address is valid and the token is valid,
-then the salt associated with the email address will be sent to the user in response.</p>
-
-<p>If the email address is valid but the token is invalid or expired,
-then a 401 unauthorized will be returned.</p>
+<ul>
+<li>If the token is valid, then the email address will be used to retrieve the salt associated with the email address, which will be returned to the user in the response.</li>
+<li>If the token is expired or not found then a 401 unauthorized will be returned.</li>
+</ul>
 <h3 id='http-request-3'>HTTP Request</h3>
-<p><strong>Method</strong> <code>GET https://saltmine.holohost.net</code></p>
+<p><strong>Method</strong> <code>GET https://saltmine.holohost.net?token=sometoken</code></p>
 <h3 id='url-parameters-3'>URL Parameters</h3>
 <table><thead>
 <tr>
