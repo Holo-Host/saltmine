@@ -332,7 +332,7 @@ At present, we have language bindings for command line / shell scripts!
 <pre class="highlight shell tab-shell"><code>curl -X GET <span class="s2">"https://saltmine.holohost.net"</span>
 </code></pre>
 <blockquote>
-<p>The above command returns 32 hex encoded bytes with mime-type text/plain</p>
+<p>If successful, the above command returns 32 hex encoded bytes with mime-type text/plain</p>
 </blockquote>
 <h1 id='register-salt-or-retrieve-salt'>Register Salt or Retrieve Salt</h1>
 <p>This request is used to register 32 bytes of SALT with the salt service.</p>
@@ -399,7 +399,7 @@ At present, we have language bindings for command line / shell scripts!
 
 </code></pre>
 <blockquote>
-<p>The above commands return a salt with mime-type text/plain</p>
+<p>If successful, the above commands return a salt with mime-type text/plain</p>
 </blockquote>
 <h1 id='verify-email-address'>Verify Email Address</h1>
 <p>This request is used to verify an email using a token. The token is sent on the URL querystring as:</p>
@@ -446,6 +446,11 @@ At present, we have language bindings for command line / shell scripts!
 <td>Server Error</td>
 </tr>
 </tbody></table>
+<pre class="highlight shell tab-shell"><code>curl -X GET <span class="s2">"https://saltmine.holohost.net?token=sometoken"</span>
+</code></pre>
+<blockquote>
+<p>If successful, the above commands return a salt with mime-type text/plain</p>
+</blockquote>
 <h1 id='errors'>Errors</h1>
 <aside class="warning">
 Errors are returned when there is a problem with the request received.
