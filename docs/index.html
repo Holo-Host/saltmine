@@ -239,7 +239,7 @@
               </ul>
           </li>
           <li>
-            <a href="#register-salt" class="toc-h1 toc-link" data-title="Register Salt">Register Salt</a>
+            <a href="#register-or-retrieve-salt" class="toc-h1 toc-link" data-title="Register or Retrieve Salt">Register or Retrieve Salt</a>
               <ul class="toc-list-h2">
                   <li>
                     <a href="#http-request-2" class="toc-h2 toc-link" data-title="HTTP Request">HTTP Request</a>
@@ -337,18 +337,26 @@ At present, we have language bindings for command line / shell scripts!
 <blockquote>
 <p>The above command returns 32 hex encoded bytes with mime-type text/plain</p>
 </blockquote>
-<h1 id='register-salt'>Register Salt</h1>
+<h1 id='register-or-retrieve-salt'>Register or Retrieve Salt</h1>
 <p>POST email and salt</p>
 
 <p>This request is used to register 32 bytes of SALT with the salt service.</p>
 
 <p>It is a POST request with a &quot;Content-type&quot; header of &quot;application/x-www-form-urlencoded&quot;.</p>
 
-<p>If the POSTed email does not already have salt associated with it, an email will
- be sent to the user to verify that they have this email address.
- The email will contain a token that the user can use to verify their email address.</p>
+<ul>
+<li>If the POSTed email is in our system:
 
-<p>The salt will be returned to the user in the response.</p>
+<ul>
+<li>If the POSTed email does not already have a salt associated with it, an email will be sent to the user to verify that they have this email address. The email will contain a token that the user can use to verify their email address.</li>
+<li>If the POSTed email does already have a salt associated with it, then we will return it.</li>
+</ul></li>
+<li>If the POSTed email is <strong>not</strong> in our system:
+
+<ul>
+<li>A salt will be generated and returned to the user in the response.</li>
+</ul></li>
+</ul>
 <h3 id='http-request-2'>HTTP Request</h3>
 <p><strong>Method</strong> <code>POST https://saltmine.holohost.net</code></p>
 <h3 id='url-parameters-2'>URL Parameters</h3>
@@ -364,12 +372,12 @@ At present, we have language bindings for command line / shell scripts!
 <tr>
 <td>Email</td>
 <td>Required</td>
-<td>The email address to be associated with the salt.</td>
+<td>An email address.</td>
 </tr>
 <tr>
 <td>Salt</td>
-<td>Required</td>
-<td>The salt to be registered.</td>
+<td>Optional</td>
+<td>A salt to be registered.</td>
 </tr>
 </tbody></table>
 <h3 id='responses-2'>Responses</h3>
@@ -389,9 +397,14 @@ At present, we have language bindings for command line / shell scripts!
 </tr>
 </tbody></table>
 <pre class="highlight shell tab-shell"><code>  curl -X POST <span class="s2">"https://saltmine.holohost.net"</span> -H <span class="s2">"Content-Type: application/x-www-form-urlencoded"</span> --data <span class="s2">"email=address@domain.com&amp;salt=abc123"</span>
+
+  or
+
+  curl -X POST <span class="s2">"https://saltmine.holohost.net"</span> -H <span class="s2">"Content-Type: application/x-www-form-urlencoded"</span> --data <span class="s2">"email=address@domain.com"</span>
+
 </code></pre>
 <blockquote>
-<p>The above command returns the salt with mime-type text/plain</p>
+<p>The above commands return a salt with mime-type text/plain</p>
 </blockquote>
 <h1 id='verify-email'>Verify Email</h1>
 <p>This request is used to verify an email against a token.
