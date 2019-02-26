@@ -250,6 +250,9 @@
                   <li>
                     <a href="#query-parameters-2" class="toc-h2 toc-link" data-title="Query Parameters">Query Parameters</a>
                   </li>
+                  <li>
+                    <a href="#responses-2" class="toc-h2 toc-link" data-title="Responses">Responses</a>
+                  </li>
               </ul>
           </li>
           <li>
@@ -390,6 +393,22 @@ At present, we have language bindings for command line / shell scripts!
 <tr>
 <td>Salt</td>
 <td>The salt to be registered.</td>
+</tr>
+</tbody></table>
+<h3 id='responses-2'>Responses</h3>
+<table><thead>
+<tr>
+<th>Code</th>
+<th>Response</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>200</td>
+<td>salt as mime-type text/plain.</td>
+</tr>
+<tr>
+<td>500</td>
+<td>Server Error</td>
 </tr>
 </tbody></table>
 <pre class="highlight shell tab-shell"><code>  curl -X POST <span class="s2">"https://saltmine.holohost.net"</span> -H <span class="s2">"Content-Type: application/x-www-form-urlencoded"</span> --data <span class="s2">"email=address%40domain.com&amp;salt=abc123"</span>
