@@ -164,6 +164,7 @@ Code | Response
 > (FOR CLOSED ALPHA, THIS CAN SKIP THE TOKEN VERIFICATION)
 >
 > The salt will be sent to the user in response.
+> 
 > **coding in progress**
 
 
