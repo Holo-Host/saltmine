@@ -201,7 +201,7 @@
       <script src="javascripts/all.js"></script>
   </head>
 
-  <body class="index" data-languages="[&quot;shell&quot;]">
+  <body class="index" data-languages="[&quot;curl&quot;]">
     <a href="#" id="nav-button">
       <span>
         NAV
@@ -211,7 +211,7 @@
     <div class="toc-wrapper">
       <img src="images/logo.png" class="logo" alt="Logo" />
         <div class="lang-selector">
-              <a href="#" data-language-name="shell">shell</a>
+              <a href="#" data-language-name="curl">curl</a>
         </div>
         <div class="search">
           <input type="text" class="search" id="input-search" placeholder="Search">
@@ -233,19 +233,33 @@
                   <li>
                     <a href="#query-parameters" class="toc-h2 toc-link" data-title="Query Parameters">Query Parameters</a>
                   </li>
+                  <li>
+                    <a href="#responses" class="toc-h2 toc-link" data-title="Responses">Responses</a>
+                  </li>
               </ul>
           </li>
           <li>
             <a href="#register-salt" class="toc-h1 toc-link" data-title="Register Salt">Register Salt</a>
-          </li>
-          <li>
-            <a href="#verify-email" class="toc-h1 toc-link" data-title="Verify Email">Verify Email</a>
               <ul class="toc-list-h2">
+                  <li>
+                    <a href="#http-request-2" class="toc-h2 toc-link" data-title="HTTP Request">HTTP Request</a>
+                  </li>
                   <li>
                     <a href="#url-parameters-2" class="toc-h2 toc-link" data-title="URL Parameters">URL Parameters</a>
                   </li>
                   <li>
                     <a href="#query-parameters-2" class="toc-h2 toc-link" data-title="Query Parameters">Query Parameters</a>
+                  </li>
+              </ul>
+          </li>
+          <li>
+            <a href="#verify-email" class="toc-h1 toc-link" data-title="Verify Email">Verify Email</a>
+              <ul class="toc-list-h2">
+                  <li>
+                    <a href="#url-parameters-3" class="toc-h2 toc-link" data-title="URL Parameters">URL Parameters</a>
+                  </li>
+                  <li>
+                    <a href="#query-parameters-3" class="toc-h2 toc-link" data-title="Query Parameters">Query Parameters</a>
                   </li>
               </ul>
           </li>
@@ -305,6 +319,22 @@ At present, we have language bindings for command line / shell scripts!
 <p>URL parameters are ignored for this request.</p>
 <h3 id='query-parameters'>Query Parameters</h3>
 <p>Query parameters are ignored for this request.</p>
+<h3 id='responses'>Responses</h3>
+<table><thead>
+<tr>
+<th>Code</th>
+<th>Response</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>200</td>
+<td>32 bytes Web Crypto random bytes as mime-type text/plain.</td>
+</tr>
+<tr>
+<td>500</td>
+<td>Server Error</td>
+</tr>
+</tbody></table>
 <pre class="highlight shell tab-shell"><code>curl -X GET <span class="s2">"https://saltmine.holohost.net"</span>
 </code></pre>
 <blockquote>
@@ -342,14 +372,63 @@ At present, we have language bindings for command line / shell scripts!
 <li>error</li>
 </ul></li>
 </ul>
+<h3 id='http-request-2'>HTTP Request</h3>
+<p><code>POST https://saltmine.holohost.net</code></p>
+<h3 id='url-parameters-2'>URL Parameters</h3>
+<p>URL parameters are ignored for this request.</p>
+<h3 id='query-parameters-2'>Query Parameters</h3>
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>Email</td>
+<td>The email address to be associated with the salt.</td>
+</tr>
+<tr>
+<td>Salt</td>
+<td>The salt to be registered.</td>
+</tr>
+</tbody></table>
 <pre class="highlight shell tab-shell"><code>  curl -X POST <span class="s2">"https://saltmine.holohost.net"</span> -H <span class="s2">"Content-Type: application/x-www-form-urlencoded"</span> --data <span class="s2">"email=address%40domain.com&amp;salt=abc123"</span>
 </code></pre>
 <blockquote>
 <p>The above command returns the salt with mime-type text/plain</p>
 </blockquote>
 <h1 id='verify-email'>Verify Email</h1>
-<p>GET url with token querystring</p>
-<h3 id='url-parameters-2'>URL Parameters</h3>
+<p>This request is used to verify an email against a token.
+GET url with token querystring.  The token is sent on the URL querystring as:</p>
+
+<p><code>?token=abc123</code></p>
+
+<p>If the email address is valid and the token is valid,
+then the salt associated with the email address will be sent to the user in response.</p>
+
+<p>If the email address is valid but the token is invalid or expired,
+then a 401 unauthorized will be returned.</p>
+
+<ul>
+<li>Method
+
+<ul>
+<li>POST</li>
+</ul></li>
+<li>Request Parameters
+
+<ul>
+<li>token (required)</li>
+</ul></li>
+<li>Response
+
+<ul>
+<li>salt</li>
+<li>401 Unauthorized</li>
+<li>error</li>
+</ul></li>
+</ul>
+<h3 id='url-parameters-3'>URL Parameters</h3>
 <table><thead>
 <tr>
 <th>Parameter</th>
@@ -361,7 +440,7 @@ At present, we have language bindings for command line / shell scripts!
 <td>The token used to verify the email</td>
 </tr>
 </tbody></table>
-<h3 id='query-parameters-2'>Query Parameters</h3>
+<h3 id='query-parameters-3'>Query Parameters</h3>
 <table><thead>
 <tr>
 <th>Parameter</th>
@@ -370,7 +449,7 @@ At present, we have language bindings for command line / shell scripts!
 </thead><tbody>
 <tr>
 <td>Email</td>
-<td>The email to be verified against the token.</td>
+<td>The email to be used to verify the token.</td>
 </tr>
 </tbody></table>
 <h1 id='retrieve-salt'>Retrieve Salt</h1>
@@ -421,7 +500,7 @@ Errors are returned when there is a problem with the request received.
       </div>
       <div class="dark-box">
           <div class="lang-selector">
-                <a href="#" data-language-name="shell">shell</a>
+                <a href="#" data-language-name="curl">curl</a>
           </div>
       </div>
     </div>
