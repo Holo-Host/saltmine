@@ -259,10 +259,16 @@
             <a href="#verify-email" class="toc-h1 toc-link" data-title="Verify Email">Verify Email</a>
               <ul class="toc-list-h2">
                   <li>
+                    <a href="#http-request-3" class="toc-h2 toc-link" data-title="HTTP Request">HTTP Request</a>
+                  </li>
+                  <li>
                     <a href="#url-parameters-3" class="toc-h2 toc-link" data-title="URL Parameters">URL Parameters</a>
                   </li>
                   <li>
                     <a href="#query-parameters-3" class="toc-h2 toc-link" data-title="Query Parameters">Query Parameters</a>
+                  </li>
+                  <li>
+                    <a href="#responses-3" class="toc-h2 toc-link" data-title="Responses">Responses</a>
                   </li>
               </ul>
           </li>
@@ -447,6 +453,8 @@ then a 401 unauthorized will be returned.</p>
 <li>error</li>
 </ul></li>
 </ul>
+<h3 id='http-request-3'>HTTP Request</h3>
+<p><code>POST https://saltmine.holohost.net</code></p>
 <h3 id='url-parameters-3'>URL Parameters</h3>
 <table><thead>
 <tr>
@@ -460,15 +468,25 @@ then a 401 unauthorized will be returned.</p>
 </tr>
 </tbody></table>
 <h3 id='query-parameters-3'>Query Parameters</h3>
+<p>Query parameters are ignored for this request.</p>
+<h3 id='responses-3'>Responses</h3>
 <table><thead>
 <tr>
-<th>Parameter</th>
-<th>Description</th>
+<th>Code</th>
+<th>Response</th>
 </tr>
 </thead><tbody>
 <tr>
-<td>Email</td>
-<td>The email to be used to verify the token.</td>
+<td>200</td>
+<td>salt as mime-type text/plain.</td>
+</tr>
+<tr>
+<td>401</td>
+<td>Unauthorized: if the email address is valid but the token is invalid or expired</td>
+</tr>
+<tr>
+<td>500</td>
+<td>Server Error</td>
 </tr>
 </tbody></table>
 <h1 id='retrieve-salt'>Retrieve Salt</h1>
