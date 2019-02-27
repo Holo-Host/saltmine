@@ -69,6 +69,7 @@ curl -X GET "https://saltmine.holohost.net"
 > **INTERNAL NOTES**
 >
 > **coding in progress**
+>
 > Invalid email address **COMPLETED**
 >
 > A holo user wishes to register 32 bytes of SALT with the salt service. They have already generated this salt with the XOR scheme described in #1  - Entropy. They make a POST request to this service, content-type application/x-www-form-urlencoded:
