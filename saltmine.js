@@ -49,8 +49,8 @@ function toHexString(byteArray) {
   GET
     return crypto string, 200
   GET with token
-    token valid, do stuff, return salt, 200
     token invalid, return 401
+    token valid, use email to get salt, return salt, 200
   POST with no content-type header
     return error, 415
   POST email but no salt
@@ -199,13 +199,53 @@ async function handleRequest(request) {
       let r = response('no token')(prng);
       return new Response(responseObj.body, responseInit);
     } else if (requestObj.method === 'get' && requestObj.token) {
-      // with token
-      console.log('token', requestObj.token);
-      // do more here
-
-
-      let r = response('token')(requestObj.token);
-      return new Response(responseObj.body, responseInit);
+      let incoming_token = requestObj.token;
+      //console.log('incoming token', incoming_token);
+      // try to get from KV store
+      let store_token_email = await EMAIL_TOKEN_STORE.get(incoming_token);
+      //console.log('store_token_email',store_token_email);
+      // if token is invalid
+      if(!store_token_email){
+        // return Invalid token
+        console.log("Invalid token", incoming_token);
+        // return 401
+        return new Response('Invalid token', {status: 401});
+      }
+      // if token is valid
+      // 1. use email to get data
+      // 2. set status to active
+      // 3. delete token entry
+      // 4. return salt
+      if(store_token_email){
+        //console.log("Valid token", incoming_token);
+        // try to get from KV store
+        // TO DO :: need to try/catch this
+        try {
+          // 1. get data
+          let json = await SALTMINE.get(store_token_email, "json");
+          //console.log("retrieved json", json)
+          // 2. change data
+          salt = json.salt;
+          newJSON = {
+            "status": "active",
+            "salt": salt
+          }
+          //console.log("new json", newJSON)
+          await SALTMINE.put(store_token_email, JSON.stringify(newJSON));
+          // 3. delete token
+          // NAMESPACE.delete(key)
+          // not active at this time
+          // TO DO :: try/catch this if we need it to succeed
+          // EMAIL_TOKEN_STORE.delete(incoming_token)
+          // 4. return salt
+          //console.log("retrieved salt", salt)
+          let r = response('existing salt')(salt);
+          return new Response(responseObj.body, responseInit);
+        } catch (e) {
+          // Display the error stack.
+          return new Response(e.stack || e)
+        }
+      }
     } else if (requestObj.method === 'post' && !requestObj.hasForm) {
       // no content-type
       let r = response('no content-type')();
