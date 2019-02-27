@@ -153,7 +153,7 @@ GET url with token querystring.  The token is sent on the URL querystring as:
 * If the token is expired or not found then a 401 unauthorized will be returned.
 
 ### HTTP Request
-**Method** `GET https://saltmine.holohost.net?token=sometoken`
+**Method** `GET https://saltmine.holohost.net/?token=sometoken`
 
 ### URL Parameters
 
