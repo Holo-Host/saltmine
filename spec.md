@@ -33,9 +33,9 @@ In the descriptions below:
 
 > **INTERNAL NOTES**
 >
-> Not all devices can produce cryptographically secure entropy. Any GET request to this service will return 32 bytes Web Crypto random bytes. Clients will locally generate 32 bytes, and XOR them with the bytes from the server to achieve a salt that is a mixture of the entropies.
->
 > **COMPLETED**
+>
+> Not all devices can produce cryptographically secure entropy. Any GET request to this service will return 32 bytes Web Crypto random bytes. Clients will locally generate 32 bytes, and XOR them with the bytes from the server to achieve a salt that is a mixture of the entropies.
 
 
 Any GET request to this service will return 32 bytes Web Crypto random bytes.
