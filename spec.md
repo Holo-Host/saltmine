@@ -92,7 +92,7 @@ It is a POST request with a "Content-type" header of "application/x-www-form-url
 
 * If the POSTed email is in our system:
   * If the POSTed email does not already have a salt associated with it, an email will be sent to the user to verify that they have this email address. The email will contain a token that the user can use to verify their email address.
- * If the POSTed email does already have a salt associated with it, then we will return it.
+  * If the POSTed email does already have a salt associated with it, then we will return it.
 * If the POSTed email is **not** in our system:
   * A salt will be generated and returned to the user in the response.
 
