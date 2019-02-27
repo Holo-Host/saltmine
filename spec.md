@@ -131,6 +131,9 @@ Code | Response
 
 > **INTERNAL NOTES**
 >
+> * Invalid Token **COMPLETED**
+> * Valid Token **IN PROGRESS**
+>
 > A holo user will receive the email with the random token. They will go again to the salt service via a URL with the following `querystring`:
 >
 > ```?token=abc123```
