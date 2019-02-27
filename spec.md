@@ -68,6 +68,9 @@ curl -X GET "https://saltmine.holohost.net"
 
 > **INTERNAL NOTES**
 >
+> **coding in progress**
+> Invalid email address **COMPLETED**
+>
 > A holo user wishes to register 32 bytes of SALT with the salt service. They have already generated this salt with the XOR scheme described in #1  - Entropy. They make a POST request to this service, content-type application/x-www-form-urlencoded:
 >
 > ```email=address%40domain.com&salt=abc123```
@@ -82,9 +85,6 @@ curl -X GET "https://saltmine.holohost.net"
 >
 > * A value will be stored in a KV associating their email with a “pending” note, the salt.
 > * A second KV stores email and the verification token and token expiration.
->
-> **coding in progress**
-
 
 This request is used to register 32 bytes of SALT with the salt service.
 
@@ -143,8 +143,6 @@ Code | Response
 > (FOR CLOSED ALPHA, THIS CAN SKIP THE TOKEN VERIFICATION)
 >
 > The salt will be sent to the user in response.
->
-> **coding in progress**
 
 
 This request is used to verify an email using a token.
