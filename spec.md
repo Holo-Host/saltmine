@@ -76,26 +76,26 @@ curl -X GET "https://saltmine.holohost.net"
 >
 > ```email=address%40domain.com&salt=abc123```
 >
-> If this email does not already have salt associated with it, an email will be sent to the user to verify that they have this email address. The email will contain a random token. The random token can be 4 hex encoded random bytes.
+> * If the POSTed email is in our system:
+>   * If the POSTed email does not already have a salt associated with it, an email will be sent to the user to verify that they have this email address. The email will contain a token that the user can use to verify their email address. The random token can be 4 hex encoded random bytes.
+> (EMAIL SENDING IS DEFERRED FOR CLOSED ALPHA)
+>   * A value will be stored in a KV associating their email with a “pending” note, the salt.
+>   * A second KV stores email and the verification token and token expiration.
 >
-> If the email address is found in the KV store, the 32 bytes of salt is returned to the user.
+> * If the email address is found in the KV store, the 32 bytes of salt is returned to the user.
 >
 > If a bad actor is looking up random emails to see if they have salt, we don’t want to alert them to whether or not that email has a salt associated. We will perform a sha256 hash on the email address concatenated to 32 bytes that we hard-code into the service, to consistently generate 32 bytes to output without having to store anything. Return the generated 32 bytes.
 >
-> (EMAIL SENDING IS DEFERRED FOR CLOSED ALPHA)
->
-> * A value will be stored in a KV associating their email with a “pending” note, the salt.
-> * A second KV stores email and the verification token and token expiration.
+> * If the POSTed email is **not** in our system:
+>   * we will do something else later
 
-This request is used to register 32 bytes of SALT with the salt service.
-
-It is a POST request with a "Content-type" header of "application/x-www-form-urlencoded".
+This request is used to register 32 bytes of SALT with the salt service.  It is a POST request with a "Content-type" header of "application/x-www-form-urlencoded".
 
 * If the POSTed email is in our system:
-  * If the POSTed email does not already have a salt associated with it, an email will be sent to the user to verify that they have this email address. The email will contain a token that the user can use to verify their email address.
-  * If the POSTed email does already have a salt associated with it, then we will return it.
-* If the POSTed email is **not** in our system:
-  * A salt will be generated and returned to the user in the response.
+  * If the POSTed email does not already have a salt associated with it, an email will be sent to the user to verify that they have this email address. The email will contain a token that the user can use to verify their email address. The random token can be 4 hex encoded random bytes.
+  * A value will be stored in a KV associating their email with a “pending” note, the salt.
+  * A second KV stores email and the verification token and token expiration.
+* If the POSTed email does already have a salt associated with it, then we will return it.
 
 ### HTTP Request
 **Method** `POST https://saltmine.holohost.net`
