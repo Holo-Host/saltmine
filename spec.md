@@ -70,7 +70,8 @@ curl -X GET "https://saltmine.holohost.net"
 >
 >**FOR CLOSED ALPHA**
 >
-> * If the POSTed email does not already have a salt associated with it, we will generate one and store it associated with the email address. **COMPLETED**
+> * If the POSTed email does not already have a salt associated with it, we will generate one, or accept an incoming salt, and store it associated with the email address.
+ **COMPLETED**
 > * If the POSTed email does already have a salt associated with it, then we will return it. **COMPLETED**
 > 
 > ----
@@ -98,7 +99,7 @@ It is a POST request with a "Content-type" header of "application/x-www-form-url
 
 **FOR CLOSED ALPHA**
 
-* If the POSTed email does not already have a salt associated with it, we will generate one and store it associated with the email address.
+* If the POSTed email does not already have a salt associated with it, we will generate one, or accept an incoming salt, and store it associated with the email address.
 * If the POSTed email does already have a salt associated with it, then we will return it.
 
 ### HTTP Request
