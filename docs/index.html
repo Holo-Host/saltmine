@@ -340,12 +340,8 @@ At present, we have language bindings for command line / shell scripts!
 <p>It is a POST request with a &quot;Content-type&quot; header of &quot;application/x-www-form-urlencoded&quot;.</p>
 
 <ul>
-<li>If the POSTed email is in our system:
-
-<ul>
-<li>If the POSTed email does not already have a salt associated with it, an email will be sent to the user to verify that they have this email address. The email will contain a token that the user can use to verify their email address.</li>
+<li>If the POSTed email does not already have a salt associated with it, we will generate one and store it associated with the email address.</li>
 <li>If the POSTed email does already have a salt associated with it, then we will return it.</li>
-</ul></li>
 </ul>
 <h3 id='http-request-2'>HTTP Request</h3>
 <p><strong>Method</strong> <code>POST https://saltmine.holohost.net</code></p>
