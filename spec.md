@@ -91,10 +91,9 @@ curl -X GET "https://saltmine.holohost.net"
 
 This request is used to register 32 bytes of SALT with the salt service.  It is a POST request with a "Content-type" header of "application/x-www-form-urlencoded".
 
-* If the POSTed email is in our system:
-  * If the POSTed email does not already have a salt associated with it, an email will be sent to the user to verify that they have this email address. The email will contain a token that the user can use to verify their email address. The random token can be 4 hex encoded random bytes.
-  * A value will be stored in a KV associating their email with a “pending” note, the salt.
-  * A second KV stores email and the verification token and token expiration.
+**FOR CLOSED ALPHA**
+
+* If the POSTed email does not already have a salt associated with it, we will generate one and store it associated with the email address.
 * If the POSTed email does already have a salt associated with it, then we will return it.
 
 ### HTTP Request
