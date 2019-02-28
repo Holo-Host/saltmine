@@ -89,7 +89,9 @@ curl -X GET "https://saltmine.holohost.net"
 > * If the POSTed email is **not** in our system:
 >   * we will do something else later
 
-This request is used to register 32 bytes of SALT with the salt service.  It is a POST request with a "Content-type" header of "application/x-www-form-urlencoded".
+This request is used to register 32 bytes of SALT with the salt service.  
+
+It is a POST request with a "Content-type" header of "application/x-www-form-urlencoded".
 
 **FOR CLOSED ALPHA**
 
