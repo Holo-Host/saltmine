@@ -68,10 +68,13 @@ curl -X GET "https://saltmine.holohost.net"
 
 > **INTERNAL NOTES**
 >
-> **coding in progress**
+>**FOR CLOSED ALPHA**
 >
-> Invalid email address **COMPLETED**
->
+> * If the POSTed email does not already have a salt associated with it, we will generate one and store it associated with the email address. **COMPLETED**
+> * If the POSTed email does already have a salt associated with it, then we will return it. **COMPLETED**
+> 
+> ----
+>  
 > A holo user wishes to register 32 bytes of SALT with the salt service. They have already generated this salt with the XOR scheme described in #1  - Entropy. They make a POST request to this service, content-type application/x-www-form-urlencoded:
 >
 > ```email=address%40domain.com&salt=abc123```
