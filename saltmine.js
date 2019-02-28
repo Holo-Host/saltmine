@@ -207,8 +207,10 @@ async function handleRequest(request) {
       return new Response(responseObj.body, responseInit);
     } else if (requestObj.method === 'post' && requestObj.hasForm && requestObj.email && requestObj.salt) {
       // 3. email sent, email has existing salt, keep existing salt, return existing salt
-      // this will default to returning the default 500 response down below
       //console.log('data found',requestObj.salt);
+      // return salt
+      let r = response('return salt')(requestObj.salt);
+      return new Response(responseObj.body, responseInit);
     }
     // if everything above fails to match, return default Response, 500
     // console.log('invoking final default response');
