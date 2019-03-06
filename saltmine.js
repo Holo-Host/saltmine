@@ -198,7 +198,7 @@ async function handleRequest(request) {
       // store email and salt, put
       newJSON = {
         "status": "active",
-        "salt": salt
+        "salt": requestObj.sent_salt
       }
       // try/catch ?
       await putSaltmineData(requestObj.email, newJSON);
