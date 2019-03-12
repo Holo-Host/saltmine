@@ -12,9 +12,8 @@
     "chai": "^4.2.0",
     "es6-map": "^0.1.5",
     "mocha": "^6.0.2",
-    "rewire": "^4.0.1"
-  },
-  "dependencies": {
+    "rewire": "^4.0.1",
     "node-fetch": "^2.3.0"
-  }
+  },
+  "dependencies": {}
 }
