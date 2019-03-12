@@ -24,7 +24,7 @@ describe('handleRequest', () => {
     console.log(response)
     expect(response.status).to.equal(200);
     expect(response.body.length).to.equal(64);
-    // expect(response.headers.get('Access-Control-Allow-Origin')).to.equal('*');
+    expect(response.headers.get('Access-Control-Allow-Origin')).to.equal('*');
   })
 
 
@@ -39,7 +39,7 @@ describe('handleRequest', () => {
     const response = await handleRequest(request);
     console.log(response)
     expect(response.status).to.equal(500);
-    // expect(response.headers.get('Access-Control-Allow-Origin')).to.equal('*');
+    expect(response.headers.get('Access-Control-Allow-Origin')).to.equal('*');
   })
 
 
@@ -55,7 +55,7 @@ describe('handleRequest', () => {
     console.log(response)
     expect(response.status).to.equal(200);
     expect(response.body.length).to.equal(10); // this is just because of our mock hash implementation
-    // expect(response.headers.get('Access-Control-Allow-Origin')).to.equal('*');
+    expect(response.headers.get('Access-Control-Allow-Origin')).to.equal('*');
   })
 
 
@@ -71,7 +71,7 @@ describe('handleRequest', () => {
     console.log(response)
     expect(response.status).to.equal(200);
     expect(response.body).to.equal('12345'); // return the salt back again
-    // expect(response.headers.get('Access-Control-Allow-Origin')).to.equal('*');
+    expect(response.headers.get('Access-Control-Allow-Origin')).to.equal('*');
   })
 })
 
