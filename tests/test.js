@@ -1,13 +1,14 @@
 var assert = require('assert');
 var expect = require('chai').expect;
 
+
 require('./mocks');
+
 
 var rewire = require("rewire");
 var saltmine = rewire("../saltmine.js");
 
 var handleRequest = saltmine.__get__('handleRequest')
-
 
 /*====================================
 =            handleRequest            =
