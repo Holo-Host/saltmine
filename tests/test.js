@@ -24,6 +24,7 @@ describe('handleRequest', () => {
     console.log(response)
     expect(response.status).to.equal(200);
     expect(response.body.length).to.equal(64);
+    console.log(response.headers)
     expect(response.headers.get('Access-Control-Allow-Origin')).to.equal('*');
   })
 

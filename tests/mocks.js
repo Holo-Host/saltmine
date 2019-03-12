@@ -17,7 +17,6 @@ module.exports = (() => {
 	      return prev;
 	    }, {});
 	  } catch (e) {
-	    console.log(e)
 	    obj = {}
 	  }
 	  return {get: i => obj[i]}

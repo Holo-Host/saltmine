@@ -171,11 +171,12 @@ async function handleRequest(request) {
       let prng = await entropy(32);
       // return entropy
       let r = response('return entropy')(prng);
-      return new Response(responseObj.body, responseInit);
+      console.log("response init!!!!!!!", r.responseInit)
+      return new Response(r.responseObj.body, r.responseInit);
     } else if (requestObj.method === 'post' && !requestObj.hasForm) {
       // no content-type header, return 415
       let r = response('no content-type')();
-      return new Response(responseObj.body, responseInit);
+      return new Response(r.responseObj.body, r.responseInit);
     } else if (requestObj.method === 'post' && requestObj.hasForm && requestObj.email && !requestObj.sent_salt) {
       // 1. email sent, no salt sent
       // gen salt, store email and salt, return salt, 200
@@ -192,7 +193,7 @@ async function handleRequest(request) {
       await putSaltmineData(requestObj.email, newJSON);
       // return salt
       let r = response('return salt')(salt);
-      return new Response(responseObj.body, responseInit);
+      return new Response(r.responseObj.body, r.responseInit);
     } else if (requestObj.method === 'post' && requestObj.hasForm && requestObj.email && requestObj.sent_salt && !requestObj.salt) {
       // 2. email sent, salt sent, email has no existing salt
       // store email and salt, put
@@ -204,13 +205,13 @@ async function handleRequest(request) {
       await putSaltmineData(requestObj.email, newJSON);
       // return salt
       let r = response('return salt')(requestObj.sent_salt);
-      return new Response(responseObj.body, responseInit);
+      return new Response(r.responseObj.body, r.responseInit);
     } else if (requestObj.method === 'post' && requestObj.hasForm && requestObj.email && requestObj.salt) {
       // 3. email sent, email has existing salt, keep existing salt, return existing salt
       //console.log('data found',requestObj.salt);
       // return salt
       let r = response('return salt')(requestObj.salt);
-      return new Response(responseObj.body, responseInit);
+      return new Response(r.responseObj.body, r.responseInit);
     }
     // if everything above fails to match, return default Response, 500
     // console.log('invoking final default response');
