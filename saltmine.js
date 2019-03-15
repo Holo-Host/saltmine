@@ -87,21 +87,17 @@ async function parseRequest(request){
   return requestObj;
 };
 
-/**
- * Utility function responseObj
- */
-const responseObj = () => ({})();
 
 /**
  * Utility function responseInit
  * @param {int} responseStatus
  */
-const responseInit = (responseStatus) => ({
-  status: responseStatus,
+const responseInitGenerator = (status) => ({
+  status,
   headers: {
   'Access-Control-Allow-Origin': '*'
   }
-})();
+});
 
 /*
 1. ENTROPY
@@ -122,34 +118,32 @@ const responseInit = (responseStatus) => ({
 /**
  * Utility function response
  */
-const response = (response) => ({
-  'return entropy' : (prng) => {
-    console.log(response);
-    responseInit.status = 200;
-    responseObj.body = prng.toString();
-    console.log({responseObj, responseInit});
-    console.log(responseObj.body);
-    return {responseObj, responseInit};
-  },
-  'return salt' : (salt) => {
-    console.log(response);
-    responseInit.status = 200;
-    responseObj.body = salt;
-    return {responseObj, responseInit};
-  },
-  'no content-type' : () => {
-    console.log(response);
-    responseInit.status = 415;
-    //responseObj.body = response;
-    return {responseObj, responseInit};
-  },
-})[response] || ( () => {
-  note = 'default response';
-  console.log(note);
-  responseInit.status = 500;
-  //responseObj.body = note;
-  return {responseObj, responseInit};
-} )();
+const responseGenerator = (responseCode) => {
+  console.log(responseCode)
+  const responseData =  {
+    'return entropy' : (prng) => {
+      return {
+        body: prng.toString(),
+        init: responseInitGenerator(200)
+      };
+    },
+    'return salt' : (salt) => {
+      return {
+        body: salt,
+        init: responseInitGenerator(200)
+      };
+    },
+    'no content-type' : () => {
+      return {
+        init: responseInitGenerator(415)
+      };
+    },
+  }[responseCode];
+
+  return responseData || {
+    init: responseInitGenerator(500)
+  };
+};
 
 //
 // THIS VERSION IS STRIPPED DOWN FOR CLOSED ALPHA !!!!!!
@@ -170,12 +164,12 @@ async function handleRequest(request) {
       // try/catch ?
       let prng = await entropy(32);
       // return entropy
-      let r = response('return entropy')(prng);
-      return new Response(responseObj.body, responseInit);
+      const {body, init} = responseGenerator('return entropy')(prng);
+      return new Response(body, init);
     } else if (requestObj.method === 'post' && !requestObj.hasForm) {
       // no content-type header, return 415
-      let r = response('no content-type')();
-      return new Response(responseObj.body, responseInit);
+      const {body, init} = responseGenerator('no content-type')();
+      return new Response(body, init);
     } else if (requestObj.method === 'post' && requestObj.hasForm && requestObj.email && !requestObj.sent_salt) {
       // 1. email sent, no salt sent
       // gen salt, store email and salt, return salt, 200
@@ -191,8 +185,8 @@ async function handleRequest(request) {
       // try/catch ?
       await putSaltmineData(requestObj.email, newJSON);
       // return salt
-      let r = response('return salt')(salt);
-      return new Response(responseObj.body, responseInit);
+      const {body, init} = responseGenerator('return salt')(salt);
+      return new Response(body, init);
     } else if (requestObj.method === 'post' && requestObj.hasForm && requestObj.email && requestObj.sent_salt && !requestObj.salt) {
       // 2. email sent, salt sent, email has no existing salt
       // store email and salt, put
@@ -203,22 +197,21 @@ async function handleRequest(request) {
       // try/catch ?
       await putSaltmineData(requestObj.email, newJSON);
       // return salt
-      let r = response('return salt')(requestObj.sent_salt);
-      return new Response(responseObj.body, responseInit);
+      const {body, init} = responseGenerator('return salt')(requestObj.sent_salt);
+      return new Response(body, init);
     } else if (requestObj.method === 'post' && requestObj.hasForm && requestObj.email && requestObj.salt) {
       // 3. email sent, email has existing salt, keep existing salt, return existing salt
       //console.log('data found',requestObj.salt);
       // return salt
-      let r = response('return salt')(requestObj.salt);
-      return new Response(responseObj.body, responseInit);
+      const {body, init} = responseGenerator('return salt')(requestObj.salt);
+      return new Response(body, init);
     }
     // if everything above fails to match, return default Response, 500
     // console.log('invoking final default response');
     // default response is NOT a function
     // so don't add extra parens on this
-    let r = response();
-    //console.log(r);
-    return new Response(r.responseObj.body, r.responseInit);
+    const {body, init} =  responseGenerator();
+    return new Response(body, init);
   } catch (e) {
       // Display the error stack.
       return new Response(e.stack || e)
