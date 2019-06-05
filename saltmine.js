@@ -84,6 +84,31 @@ async function parseRequest(request){
       }
     }
   }
+  else if ((request.method.toLowerCase()==='get') && (request.headers.get("Content-Type") === 'application/x-www-form-urlencoded')) {
+    const emailObj = request.url.split('?')[1]
+    console.log('emailObj', emailObj)
+
+    if(emailObj){
+      requestObj.hasForm = true;
+
+      requestObj.email = emailObj.split('=')[1]
+      console.log('requestObj EMAIL', requestObj.email)
+      try {
+        let existing_data = JSON.parse(await getSaltmineDataByEmail(requestObj.email));
+        if(existing_data){
+          console.log('data found at email : ',existing_data);
+          requestObj.status = existing_data.status;
+          requestObj.token = existing_data.token;
+          requestObj.salt = existing_data.salt;
+        }
+        return existing_data;
+
+      } catch(e) {
+        console.log("Error locating salt at provided email.", e);
+        return new Response(e.stack || e)
+      }
+    }
+  }
   return requestObj;
 };
 
@@ -138,6 +163,11 @@ const responseGenerator = (responseCode) => {
         init: responseInitGenerator(415)
       };
     },
+    'no email found' : () => {
+      return {
+        init: responseInitGenerator(404)
+      };
+    },
   }[responseCode];
 
   return responseData || {
@@ -166,12 +196,28 @@ async function handleRequest(request) {
       // return entropy
       const {body, init} = responseGenerator('return entropy')(prng);
       return new Response(body, init);
+    } else if (requestObj.method === 'get' && requestObj.email && requestObj.salt) {
+      // 2. email sent, email found and has existing salt, keep existing salt, return existing salt
+      //console.log('data found',requestObj.salt);
+      // return salt
+      const {body, init} = responseGenerator('return salt')(requestObj.salt);
+      return new Response(body, init);
+    } else if (requestObj.method === 'get' && requestObj.email && !requestObj.salt) {
+      // 3. email sent, email NOT found, NO existing salt, return error 404 message
+      const {body, init} = responseGenerator('no email found')();
+      return new Response(body, init);
     } else if (requestObj.method === 'post' && !requestObj.hasForm) {
-      // no content-type header, return 415
+      // 4. no content-type header, return 415
       const {body, init} = responseGenerator('no content-type')();
       return new Response(body, init);
+    } else if (requestObj.method === 'post' && requestObj.hasForm && requestObj.email && requestObj.salt) {
+      // 5. email sent, email has existing salt, keep existing salt, return existing salt
+      //console.log('data found',requestObj.salt);
+      // return salt
+      const {body, init} = responseGenerator('return salt')(requestObj.salt);
+      return new Response(body, init);
     } else if (requestObj.method === 'post' && requestObj.hasForm && requestObj.email && !requestObj.sent_salt) {
-      // 1. email sent, no salt sent
+      // 6. email sent, no salt sent
       // gen salt, store email and salt, return salt, 200
       let enc_email = encodeURIComponent(requestObj.email);
       console.log("generate salt");
@@ -188,7 +234,7 @@ async function handleRequest(request) {
       const {body, init} = responseGenerator('return salt')(salt);
       return new Response(body, init);
     } else if (requestObj.method === 'post' && requestObj.hasForm && requestObj.email && requestObj.sent_salt && !requestObj.salt) {
-      // 2. email sent, salt sent, email has no existing salt
+      // 6. email sent, salt sent, email has no existing salt
       // store email and salt, put
       newJSON = {
         "status": "active",
@@ -199,14 +245,8 @@ async function handleRequest(request) {
       // return salt
       const {body, init} = responseGenerator('return salt')(requestObj.sent_salt);
       return new Response(body, init);
-    } else if (requestObj.method === 'post' && requestObj.hasForm && requestObj.email && requestObj.salt) {
-      // 3. email sent, email has existing salt, keep existing salt, return existing salt
-      //console.log('data found',requestObj.salt);
-      // return salt
-      const {body, init} = responseGenerator('return salt')(requestObj.salt);
-      return new Response(body, init);
     }
-    // if everything above fails to match, return default Response, 500
+    // 8. DEFAULT : if everything above fails to match, return default Response, 500
     // console.log('invoking final default response');
     // default response is NOT a function
     // so don't add extra parens on this
