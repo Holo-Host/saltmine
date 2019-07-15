@@ -198,7 +198,7 @@ async function handleRequest(request) {
       const {body, init} = responseGenerator('return salt')(salt);
       const user_message = {message:"Created entropy and new salt for new user."}
       const msg_body = {...body, user_message};
-      console.log("msg_body :", msg_body);
+      console.log("body with msg_body :", body);
 
       return new Response(body, init);
     } else if (requestObj.method === 'post' && requestObj.hasForm && requestObj.email && requestObj.salt && requestObj.sent_salt) {
@@ -209,7 +209,7 @@ async function handleRequest(request) {
       const {body, init} = responseGenerator('return salt')(requestObj.salt);
       const user_message = {message:"User already exists."}
       const msg_body = {...body, user_message};
-      console.log("msg_body :", msg_body);
+      console.log("body with msg_body :", body);
 
       return new Response(msg_body, init);
     } else if (requestObj.method === 'post' && requestObj.hasForm && requestObj.email && requestObj.sent_salt && !requestObj.salt) {
@@ -224,8 +224,9 @@ async function handleRequest(request) {
       // return salt
       const {body, init} = responseGenerator('return salt')(requestObj.sent_salt);
       const user_message = {message:"Produced new salt for new user."}
-      const msg_body = {...body, user_message};
-      console.log("msg_body :", msg_body);
+      const msg_body = {...body , user_message};
+      const stringified_body = JSON.stringify(msg_body);
+      console.log("STRINGIFIED body with msg_body :", stringified_body);
 
       return new Response(msg_body, init);
     }
