@@ -169,17 +169,23 @@ async function handleRequest(request) {
       // return entropy
       const {body, init} = responseGenerator('return entropy')(prng);
       return new Response(body, init);
+
     } else if (requestObj.method === 'post' && !requestObj.hasForm) {
       // 2. POST with no content-type header: return status code 415
       const {body, init} = responseGenerator('no content-type')();
       return new Response(body, init);
+
     } else if (requestObj.method === 'post' && requestObj.hasForm && requestObj.email && requestObj.salt && !requestObj.sent_salt) {
       // 3. Email sent ONLY & email has existing salt: keep existing salt & return existing salt; status code 200
       // Context: Returning user logs in.
 
       //console.log('data found',requestObj.salt);
       const {body, init} = responseGenerator('return salt')(requestObj.salt);
-      return new Response(body, init);
+      const user_message = {message:"Log-in successful."}
+      const msg_body = {...body, user_message};
+      const stringified_body = JSON.stringify(msg_body);
+      return new Response(stringified_body, init);
+
     } else if (requestObj.method === 'post' && requestObj.hasForm && requestObj.email && !requestObj.sent_salt) {
       // 4. Email sent ONLY, & email does NOT have existing salt : gen salt, store email and salt & return salt; status code 200
       // Context: User 'signs up' on 'log in' page.
@@ -198,9 +204,9 @@ async function handleRequest(request) {
       const {body, init} = responseGenerator('return salt')(salt);
       const user_message = {message:"Created entropy and new salt for new user."}
       const msg_body = {...body, user_message};
-      console.log("body with msg_body :", body);
+      const stringified_body = JSON.stringify(msg_body);
+      return new Response(stringified_body, init);
 
-      return new Response(body, init);
     } else if (requestObj.method === 'post' && requestObj.hasForm && requestObj.email && requestObj.salt && requestObj.sent_salt) {
       // 5. Email & Salt sent, but email alredy has existing salt: keep existing salt & return existing salt and user message; status code 200
       // Context: Returning user tries to `log in` on `sign up` page.
@@ -209,9 +215,9 @@ async function handleRequest(request) {
       const {body, init} = responseGenerator('return salt')(requestObj.salt);
       const user_message = {message:"User already exists."}
       const msg_body = {...body, user_message};
-      console.log("body with msg_body :", body);
+      const stringified_body = JSON.stringify(msg_body);
+      return new Response(stringified_body, init);
 
-      return new Response(msg_body, init);
     } else if (requestObj.method === 'post' && requestObj.hasForm && requestObj.email && requestObj.sent_salt && !requestObj.salt) {
       // 6. Email & Salt sent, and email does NOT have existing salt : store email and salt (put) & return salt; status code 200
       // Context: User signs up for first time.
@@ -226,16 +232,16 @@ async function handleRequest(request) {
       const user_message = {message:"Produced new salt for new user."}
       const msg_body = {...body , user_message};
       const stringified_body = JSON.stringify(msg_body);
-      console.log("STRINGIFIED body with msg_body :", stringified_body);
-
-      return new Response(msg_body, init);
+      return new Response(stringified_body, init);
     }
+
     // 7. DEFAULT : if everything above fails to match, return default Response, 500
     // console.log('invoking final default response');
     // default response is NOT a function
     // so don't add extra parens on this
     const {body, init} =  responseGenerator();
     return new Response(body, init);
+    
   } catch (e) {
       // Display the error stack.
       return new Response(e.stack || e)
