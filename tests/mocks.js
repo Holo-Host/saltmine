@@ -32,12 +32,12 @@ module.exports = (() => {
 	// a stubbed keyvalue store that exists for the life of the test
 	let kv = {}
 	global.SALTMINE = {
-	  get: k => { 
-	    console.log(`getting ${k} = ${kv[k]}`)
+	  get: k => {
+	    console.log(`found : ${k} = ${kv[k]} in KV store`)
 	    return JSON.stringify(kv[k]) || JSON.stringify({})
 	  },
 	  put: (k, v) => {
-	    console.log(`storing ${k} = ${v}`)
+	    console.log(`storing : ${k} = ${v} in KV store`)
 	    kv[k] = v
 	  }
 	}
