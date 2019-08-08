@@ -1,3 +1,4 @@
+// saltmine.js deployed via wrangler
 //
 // THIS VERSION IS STRIPPED DOWN FOR CLOSED ALPHA !!!!!!
 //
