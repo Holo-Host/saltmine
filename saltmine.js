@@ -242,7 +242,7 @@ async function handleRequest(request) {
     // so don't add extra parens on this
     const {body, init} =  responseGenerator();
     return new Response(body, init);
-    
+
   } catch (e) {
       // Display the error stack.
       return new Response(e.stack || e)
