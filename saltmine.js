@@ -1,6 +1,6 @@
 // saltmine.js deployed via wrangler
 //
-// THIS VERSION IS STRIPPED DOWN FOR CLOSED ALPHA !!!!!!
+// THIS VERSION IS STRIPPED DOWN FOR CLOSED ALPHA !!!
 //
 
 addEventListener('fetch', event => {

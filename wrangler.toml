@@ -10,7 +10,7 @@ account_id = "18ff2b4e6205b938652998cfca0d8cff"
 zone_id = "88b74327b34a5c07ebea8b37b548acf6"
 
 # The route pattern your Workers application will be served at
-route = "saltmine.holohost.net"
+route = "saltmine.holohost.net/*"
 
 # The kind of application you're deploying to Cloudflare
 type = "javascript"
@@ -21,9 +21,9 @@ private = true
 
 ## kv namespace bindings
 [[kv-namespaces]]
-binding = "SALTMINE"
-id = "6a9c312d85cc48278a9d50a584d8e32d"
-
-[[kv-namespaces]]
 binding = "EMAIL_TOKEN_STORE"
 id = "9e7baffb76ae4ce8aa929d7591fba1ea"
+
+[[kv-namespaces]]
+binding = "SALTMINE"
+id = "6a9c312d85cc48278a9d50a584d8e32d"
