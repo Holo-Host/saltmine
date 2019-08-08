@@ -50,8 +50,8 @@ async function getSaltmineDataByEmail(email){
 }
 
 async function putSaltmineData(email, newJSON){
-  console.log('email',email);
-  console.log("new json", newJSON);
+  console.log('email : ',email);
+  console.log("new json : ", newJSON);
   // try/catch ?
   await SALTMINE.put(email, JSON.stringify(newJSON));
 }
@@ -122,18 +122,21 @@ const responseInitGenerator = (status) => ({
 const responseGenerator = (responseCode) => {
   console.log(responseCode)
   const responseData =  {
+    // USE CASE: When successful GET API call was made for entropy.
     'return entropy' : (prng) => {
       return {
         body: prng.toString(),
         init: responseInitGenerator(200)
       };
     },
+    // USE CASE: When user has successfully signed up or logged in, returning salt to user.
     'return salt' : (salt) => {
       return {
-        body: salt,
+        body: {salt: salt},
         init: responseInitGenerator(200)
       };
     },
+    // USE CASE: Error-handling for misconfigured headers
     'no content-type' : () => {
       return {
         init: responseInitGenerator(415)
@@ -157,23 +160,36 @@ async function handleRequest(request) {
   // Wrap code in try/catch block to return error stack in the response body
   try {
     let requestObj = await parseRequest(request);
-    console.log(requestObj);
+    console.log("requestObj: ", requestObj);
 
     // ALL CURRENTLY IMPLEMENTED RESPONSES ARE HERE
     if (requestObj.method === 'get' && !requestObj.token) {
-      // 1. ENTROPY, return crypto string
+      // 1. GET call for ENTROPY: return crypto string as entropy; status code 200
       // try/catch ?
       let prng = await entropy(32);
       // return entropy
       const {body, init} = responseGenerator('return entropy')(prng);
       return new Response(body, init);
+
     } else if (requestObj.method === 'post' && !requestObj.hasForm) {
-      // no content-type header, return 415
+      // 2. POST with no content-type header: return status code 415
       const {body, init} = responseGenerator('no content-type')();
       return new Response(body, init);
+
+    } else if (requestObj.method === 'post' && requestObj.hasForm && requestObj.email && requestObj.salt && !requestObj.sent_salt) {
+      // 3. Email sent ONLY & email has existing salt: keep existing salt & return existing salt; status code 200
+      // Context: Returning user logs in.
+
+      //console.log('data found',requestObj.salt);
+      const {body, init} = responseGenerator('return salt')(requestObj.salt);
+      const user_message = {message:"Log-in successful."}
+      const msg_body = {...body, user_message};
+      const stringified_body = JSON.stringify(msg_body);
+      return new Response(stringified_body, init);
+
     } else if (requestObj.method === 'post' && requestObj.hasForm && requestObj.email && !requestObj.sent_salt) {
-      // 1. email sent, no salt sent
-      // gen salt, store email and salt, return salt, 200
+      // 4. Email sent ONLY, & email does NOT have existing salt : gen salt, store email and salt & return salt; status code 200
+      // Context: User 'signs up' on 'log in' page.
       let enc_email = encodeURIComponent(requestObj.email);
       console.log("generate salt");
       // generate salt via function above
@@ -187,10 +203,25 @@ async function handleRequest(request) {
       await putSaltmineData(requestObj.email, newJSON);
       // return salt
       const {body, init} = responseGenerator('return salt')(salt);
-      return new Response(body, init);
+      const user_message = {message:"Created entropy and new salt for new user."}
+      const msg_body = {...body, user_message};
+      const stringified_body = JSON.stringify(msg_body);
+      return new Response(stringified_body, init);
+
+    } else if (requestObj.method === 'post' && requestObj.hasForm && requestObj.email && requestObj.salt && requestObj.sent_salt) {
+      // 5. Email & Salt sent, but email alredy has existing salt: keep existing salt & return existing salt and user message; status code 200
+      // Context: Returning user tries to `log in` on `sign up` page.
+
+      //console.log('data found',requestObj.salt);
+      const {body, init} = responseGenerator('return salt')(requestObj.salt);
+      const user_message = {message:"User already exists."}
+      const msg_body = {...body, user_message};
+      const stringified_body = JSON.stringify(msg_body);
+      return new Response(stringified_body, init);
+
     } else if (requestObj.method === 'post' && requestObj.hasForm && requestObj.email && requestObj.sent_salt && !requestObj.salt) {
-      // 2. email sent, salt sent, email has no existing salt
-      // store email and salt, put
+      // 6. Email & Salt sent, and email does NOT have existing salt : store email and salt (put) & return salt; status code 200
+      // Context: User signs up for first time.
       newJSON = {
         "status": "active",
         "salt": requestObj.sent_salt
@@ -199,20 +230,19 @@ async function handleRequest(request) {
       await putSaltmineData(requestObj.email, newJSON);
       // return salt
       const {body, init} = responseGenerator('return salt')(requestObj.sent_salt);
-      return new Response(body, init);
-    } else if (requestObj.method === 'post' && requestObj.hasForm && requestObj.email && requestObj.salt) {
-      // 3. email sent, email has existing salt, keep existing salt, return existing salt
-      //console.log('data found',requestObj.salt);
-      // return salt
-      const {body, init} = responseGenerator('return salt')(requestObj.salt);
-      return new Response(body, init);
+      const user_message = {message:"Produced new salt for new user."}
+      const msg_body = {...body , user_message};
+      const stringified_body = JSON.stringify(msg_body);
+      return new Response(stringified_body, init);
     }
-    // if everything above fails to match, return default Response, 500
+
+    // 7. DEFAULT : if everything above fails to match, return default Response, 500
     // console.log('invoking final default response');
     // default response is NOT a function
     // so don't add extra parens on this
     const {body, init} =  responseGenerator();
     return new Response(body, init);
+    
   } catch (e) {
       // Display the error stack.
       return new Response(e.stack || e)
