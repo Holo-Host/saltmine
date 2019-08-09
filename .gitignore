@@ -3,3 +3,6 @@
 
 # private scripts etc.
 private/
+node_modules/
+*~
+dist/

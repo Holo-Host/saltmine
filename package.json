@@ -4,9 +4,26 @@
     "description": "Saltmine for Holo salt requests",
     "main": "saltmine.js",
     "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
+        "test": "mocha -c --recursive ./tests",
+        "test:unit": "mocha ./tests/unit",
+        "build": "webpack   --mode production --output-filename worker.js"
     },
     "author": "Paul B. Hartzog <paul.hartzog@holo.host>",
+    "contributors": [
+        "Matthew Brisebois <matthew.brisebois@holo.host>"
+    ],
     "license": "MIT",
-    "devDependencies": {}
+    "devDependencies": {
+        "@cloudflare/wrangler": "^1.0.2",
+        "@dollarshaveclub/cloudworker": "^0.1.1",
+        "@whi/stdlog": "^0.3.0",
+        "mocha": "^6.2.0",
+        "webpack": "^4.39.1",
+        "webpack-cli": "^3.3.6"
+    },
+    "dependencies": {
+        "chalk": "^2.4.2",
+        "loglevel": "^1.6.3",
+        "loglevel-plugin-prefix": "^0.8.4"
+    }
 }
