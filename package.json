@@ -2,7 +2,7 @@
     "name": "saltmine",
     "version": "1.0.0",
     "description": "Saltmine for Holo salt requests",
-    "main": "saltmine.js",
+    "main": "dist/worker.js",
     "scripts": {
         "test": "mocha -c --recursive ./tests",
         "test:unit": "mocha ./tests/unit",

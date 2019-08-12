@@ -18,8 +18,11 @@ commands:
           name: Webpack build
           command: npm run build
       - run:
-          name: Test
+          name: Test via dollarshaveclub Cloudworkers
           command: npm test
+      - run:
+          name: Test via cloudflare Serviceworker (requires CF_... env. vars)
+          command: make test-ci
       - save-npm-cache
   save-npm-cache:
     steps:
