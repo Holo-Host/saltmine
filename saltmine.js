@@ -16,7 +16,7 @@ addEventListener('fetch', event => {
  * Utility function for sha256 hashing
  * @param {String} seed
  */
-async function sha256(seed) {
+async function sha256( seed ) {
     // encode as UTF-8
     const msgBuffer = new TextEncoder().encode(seed)
     // hash the message
@@ -32,7 +32,7 @@ async function sha256(seed) {
  * Utility function for entropy
  * @param {int} length
  */
-async function entropy(length){
+async function entropy( length ) {
     let array = new Uint8Array(length);
     crypto.getRandomValues(array);
     let hexArray = toHexString(array);
@@ -49,16 +49,16 @@ function toHexString(byteArray) {
     }).join('');
 }
 
-async function getSaltmineDataByEmail(email){
-    existing_data = await SALTMINE.get(email);
-    return existing_data;
+async function getSaltmineDataByEmail( email ) {
+    return await SALTMINE.get( email, 'json' );
 }
 
-async function putSaltmineData(email, newJSON){
-    console.log('email : ',email);
-    console.log("new json : ", newJSON);
-    // try/catch ?
-    await SALTMINE.put(email, JSON.stringify(newJSON));
+async function putSaltmineData( email, newJSON ) {
+    const payload = JSON.stringify( newJSON );
+    
+    log.info("Storing data for email (%s): %s", email, payload );
+
+    await SALTMINE.put( email, payload );
 }
 
 //
@@ -67,29 +67,41 @@ async function putSaltmineData(email, newJSON){
 /**
  * Utility function responseObj
  */
-async function parseRequest(request){
-    let requestObj = {};
-    requestObj.method = request.method.toLowerCase();
-    const url = new URL(request.url);
-    requestObj.token = url.searchParams.get("token");
-    if ((request.method.toLowerCase()==='post') && (request.headers.get("Content-Type") === 'application/x-www-form-urlencoded')) {
-	requestObj.hasForm = true;
-	const data = await request.formData();
-	requestObj.email = data.get('email');
-	requestObj.sent_salt = data.get('salt');
-	if(requestObj.email){
-	    // try/catch ?
-	    let existing_data = JSON.parse(await getSaltmineDataByEmail(requestObj.email));
-	    if(existing_data){
-		//console.log('data found',existing_data);
-		requestObj.status = existing_data.status;
-		requestObj.token = existing_data.token;
-		requestObj.salt = existing_data.salt;
+async function parseRequest ( request ) {
+    const url		= new URL( request.url );
+    const method	= request.method.toLowerCase();
+    const content_type	= request.headers.get("Content-Type");
+    
+    const requestObj	= {
+	method,
+	"token": url.searchParams.get("token"),
+    };
+    
+    log.debug("Parsing request: %s %s", method, url );
+    if ( method === 'post' && content_type === 'application/x-www-form-urlencoded' ) {
+	requestObj.hasForm		= true;
+	
+	const data			= await request.formData();
+	const email			= data.get('email');
+	
+	requestObj.email		= email;
+	requestObj.sent_salt		= data.get('salt');
+	
+	if ( email ) {
+	    const sm_data		= await getSaltmineDataByEmail( email );
+	    
+	    if ( sm_data ) {
+		log.info("Found existing data for '%s': %s", email, sm_data );
+		requestObj.status	= sm_data.status;
+		requestObj.token	= sm_data.token;
+		requestObj.salt		= sm_data.salt;
 	    } else {
 		// something ?
 	    }
 	}
     }
+
+    log.debug("Parsed request object: %s", requestObj );
     return requestObj;
 };
 
@@ -98,12 +110,14 @@ async function parseRequest(request){
  * Utility function responseInit
  * @param {int} responseStatus
  */
-const responseInitGenerator = (status) => ({
-    status,
-    headers: {
-	'Access-Control-Allow-Origin': '*'
-    }
-});
+const responseInitGenerator = ( status ) => {
+    return {
+	status,
+	headers: {
+	    'Access-Control-Allow-Origin': '*'
+	}
+    };
+};
 
 /*
   1. ENTROPY
@@ -125,7 +139,7 @@ const responseInitGenerator = (status) => ({
  * Utility function response
  */
 const responseGenerator = (responseCode) => {
-    console.log(responseCode)
+    log.info("Getting response generator for code: %s", responseCode );
     const responseData =  {
 	// USE CASE: When successful GET API call was made for entropy.
 	'return entropy' : (prng) => {
@@ -165,7 +179,6 @@ async function handleRequest(request) {
     // Wrap code in try/catch block to return error stack in the response body
     try {
 	let requestObj = await parseRequest(request);
-	console.log("requestObj: ", requestObj);
 
 	// ALL CURRENTLY IMPLEMENTED RESPONSES ARE HERE
 	if (requestObj.method === 'get' && !requestObj.token) {
@@ -196,16 +209,15 @@ async function handleRequest(request) {
 	    // 4. Email sent ONLY, & email does NOT have existing salt : gen salt, store email and salt & return salt; status code 200
 	    // Context: User 'signs up' on 'log in' page.
 	    let enc_email = encodeURIComponent(requestObj.email);
-	    console.log("generate salt");
+	    log.info("Generate salt");
 	    // generate salt via function above
-	    salt = await sha256(enc_email);
+	    let salt = await sha256(enc_email);
 	    // store email and salt, put
-	    newJSON = {
+	    // try/catch ?
+	    await putSaltmineData(requestObj.email, {
 		"status": "active",
 		"salt": salt
-	    }
-	    // try/catch ?
-	    await putSaltmineData(requestObj.email, newJSON);
+	    });
 	    // return salt
 	    const {body, init} = responseGenerator('return salt')(salt);
 	    const user_message = {message:"Created entropy and new salt for new user."}
@@ -227,12 +239,11 @@ async function handleRequest(request) {
 	} else if (requestObj.method === 'post' && requestObj.hasForm && requestObj.email && requestObj.sent_salt && !requestObj.salt) {
 	    // 6. Email & Salt sent, and email does NOT have existing salt : store email and salt (put) & return salt; status code 200
 	    // Context: User signs up for first time.
-	    newJSON = {
+	    // try/catch ?
+	    await putSaltmineData(requestObj.email, {
 		"status": "active",
 		"salt": requestObj.sent_salt
-	    }
-	    // try/catch ?
-	    await putSaltmineData(requestObj.email, newJSON);
+	    });
 	    // return salt
 	    const {body, init} = responseGenerator('return salt')(requestObj.sent_salt);
 	    const user_message = {message:"Produced new salt for new user."}
@@ -246,11 +257,14 @@ async function handleRequest(request) {
 	// default response is NOT a function
 	// so don't add extra parens on this
 	const {body, init} =  responseGenerator();
+
+	log.debug("Final response: %s", body );
 	return new Response(body, init);
 
-    } catch (e) {
-	// Display the error stack.
-	return new Response(e.stack || e)
+    } catch ( err ) {
+	log.error("Failed to process request: %s", String(err) );
+	console.log( err );
+	return new Response( err.stack || err );
     }
 }
 

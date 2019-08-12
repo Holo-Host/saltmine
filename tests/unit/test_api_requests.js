@@ -5,7 +5,9 @@ const log				= require('@whi/stdlog')(path.basename( __filename ), {
 
 const fs				= require('fs');
 const assert				= require('assert');
+const axios				= require('axios');
 const Cloudworker			= require('@dollarshaveclub/cloudworker');
+const { Response }			= Cloudworker;
 
 const worker_code			= fs.readFileSync('./dist/worker.js', 'utf8');
 
@@ -19,15 +21,8 @@ const serialize				= function (obj) {
 }
 
 
-const domain				= "example.com";
-const hash				= "made_up_happ_hash_for_test";
-const host_list				= [
-    "made_up_host_agent_id_for_test.holohost.net",
-];
-    
 
-
-before(async function () {
+async function setup_for_cloudworker () {
     const bindings			= {
 	//
 	// Key value store for getting the entropy by email
@@ -44,47 +39,146 @@ before(async function () {
     Object.assign( global, Object.fromEntries( methods.map(n => [n, cw[n]]) ));
 
     cw.log.setLevel( process.env.WORKER_DEBUG_LEVEL || 'error' );
+}
+
+async function setup_for_service_worker ( staging_url ) {
+    global.Request = function Request ( url, config ) {
+	this.url = url;
+	this.config = config;
+    }
+    
+    global.handleRequest = async function ( req ) {
+	let response;
+	try {
+	    response			= await axios({
+		"url": staging_url,
+		"method": "POST",
+		"transformResponse": null,
+		"data": req.config.body,
+		"headers": req.config.headers,
+	    });
+	} catch ( err ) {
+	    log.error("%s", err );
+	    response			= err.response;
+	}
+
+	return new Response( response.data, {
+	    "status": response.status,
+	    "headers": response.headers,
+	});
+    }
+}
+
+
+before(async function () {
+    if ( process.env.TESTING_URL )
+	await setup_for_service_worker( process.env.TESTING_URL );
+    else
+	await setup_for_cloudworker();
 });
 
 
+describe("Worker Test", function() {
 
-describe('Worker Test', function() {
-
-    it('send post data in urlencoded form', async function () {
-	let req				= new Request('https://worker.example.com/', {
+    it("should get (64 byte) entropy with no input", async function () {
+	let req				= new Request("https://worker.example.com/", {
 	    "method": "GET",
 	});
-	log.silly("%s", req );
 	
 	let resp			= await handleRequest( req );
 	log.debug("%s", resp );
 	let body			= await resp.text();
-	log.debug("%s", body );
+	log.info("%s", body );
 
 	assert.equal( resp.status, 200 );
-	assert.equal( resp.headers.get('Access-Control-Allow-Origin'), '*' );
+	assert.equal( resp.headers.get("Access-Control-Allow-Origin"), "*" );
 	assert.equal( body.length, 64 );
-    })
+    });
+    
+    it("should create new entropy with email and salt input", async function () {
+	let req				= new Request("https://worker.example.com", {
+	    "method": "POST",
+	    "body": serialize({
+		"email": "asdfg",
+		"salt": 12345,
+	    }),
+	    "headers": {
+		"Content-Type": "application/x-www-form-urlencoded"
+	    }
+	});
+	
+	let resp			= await handleRequest( req );
+	log.debug("%s", resp );
+	let body			= await resp.json();
+	log.info("%s", body );
 
-    // it('send post data in JSON form', async function () {
-    // 	let req				= new Request('https://worker.example.com/', {
-    // 	    "method": "POST",
-    // 	    "body": JSON.stringify({
-    // 		"url": domain,
-    // 	    }),
-    // 	    "headers": {
-    // 		"Content-Type": "application/json",
-    // 	    },
-    // 	});
+	assert.equal( resp.status, 200 );
+	assert.equal( resp.headers.get("Access-Control-Allow-Origin"), "*" );
+	assert.equal( body.salt, '12345' );
+    });
+    
+    it("should get existing entropy for email and salt input", async function () {
+	let req				= new Request("https://worker.example.com", {
+	    "method": "POST",
+	    "body": serialize({
+		"email": "asdfg",
+		"salt": 56789,
+	    }),
+	    "headers": {
+		"Content-Type": "application/x-www-form-urlencoded"
+	    }
+	});
 	
-    // 	let resp			= await handleRequest( req );
-    // 	let body			= await resp.json();
+	let resp			= await handleRequest( req );
+	log.debug("%s", resp );
+	let body			= await resp.json();
+	log.info("%s", body );
+
+	assert.equal( resp.status, 200 );
+	assert.equal( resp.headers.get("Access-Control-Allow-Origin"), "*" );
+	assert.equal( body.salt, '12345' );
+    });
+    
+    it("should create new entropy with email input", async function () {
+	let req				= new Request("https://worker.example.com", {
+	    "method": "POST",
+	    "body": serialize({
+		"email": "test@example.com",
+	    }),
+	    "headers": {
+		"Content-Type": "application/x-www-form-urlencoded"
+	    }
+	});
 	
-    // 	assert.deepEqual( body, {
-    // 	    "hash": hash,
-    // 	    "hosts": host_list,
-    // 	    "requestURL": domain,
-    // 	});
-    // })
+	let resp			= await handleRequest( req );
+	log.debug("%s", resp );
+	let body			= await resp.json();
+	log.info("%s", body );
+
+	assert.equal( resp.status, 200 );
+	assert.equal( resp.headers.get("Access-Control-Allow-Origin"), "*" );
+	assert.equal( body.salt.length, '64' );
+    });
+
+    
+    // Failure modes
+    
+    it("should fail when POST request has no input", async function () {
+	let req				= new Request("https://worker.example.com/", {
+	    "method": "POST",
+	    "headers": {
+		"Content-Type": "application/x-www-form-urlencoded"
+	    }
+	});
+	
+	let resp			= await handleRequest( req );
+	log.debug("%s", resp );
+	let body			= await resp.text();
+	log.info("%s", body );
+
+	assert.equal( resp.status, 500 );
+	assert.equal( resp.headers.get("Access-Control-Allow-Origin"), "*" );
+	assert.equal( body.length, 0 );
+    });
 
 });
