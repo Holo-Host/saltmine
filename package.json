@@ -17,6 +17,7 @@
         "@cloudflare/wrangler": "^1.0.2",
         "@dollarshaveclub/cloudworker": "^0.1.1",
         "@whi/stdlog": "^0.3.0",
+        "axios": "^0.19.0",
         "mocha": "^6.2.0",
         "webpack": "^4.39.1",
         "webpack-cli": "^3.3.6"

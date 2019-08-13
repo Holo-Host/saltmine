@@ -52,13 +52,13 @@ async function setup_for_service_worker ( staging_url ) {
 	try {
 	    response			= await axios({
 		"url": staging_url,
-		"method": "POST",
+		"method": req.config.method || "GET",
 		"transformResponse": null,
 		"data": req.config.body,
 		"headers": req.config.headers,
 	    });
 	} catch ( err ) {
-	    log.error("%s", err );
+	    log.error("%s", String(err) );
 	    response			= err.response;
 	}
 
