@@ -13,6 +13,14 @@ test-debug:	./node_modules
 		WORKER_DEBUG_LEVEL=trace		\
 		./node_modules/.bin/mocha -c --recursive ./tests
 
+test-live:	./node_modules
+	npm run build &&					\
+		DEBUG_LEVEL=silly				\
+		WORKER_DEBUG_LEVEL=trace			\
+		TESTING_URL=http://saltmine-ci.holohost.net	\
+		./node_modules/.bin/mocha -c --recursive ./tests
+
+
 # CI tests depend on ./node_modules as defined in the package-lock.json file;
 # the `npm ci` command ensures that node_modules is generated from it.
 # Run these targets with the appropriate CF_EMAIL="..." CF_API_KEY="..."
