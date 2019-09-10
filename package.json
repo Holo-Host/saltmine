@@ -23,8 +23,6 @@
         "webpack-cli": "^3.3.6"
     },
     "dependencies": {
-        "chalk": "^2.4.2",
-        "loglevel": "^1.6.3",
-        "loglevel-plugin-prefix": "^0.8.4"
+        "@holo-host/service-worker-logger": "^0.1.0"
     }
 }

@@ -2,7 +2,7 @@
 //
 // THIS VERSION IS STRIPPED DOWN FOR CLOSED ALPHA !!!
 //
-import { logging }	from './log.js';
+import { logging }	from '@holo-host/service-worker-logger';
 
 const log = logging.getLogger('resolver.js');
 log.setLevel('error');
